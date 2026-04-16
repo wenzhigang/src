@@ -1,41 +1,13 @@
 import { View, Text, Image, ScrollView } from '@tarojs/components'
 import { useState } from 'react'
+import Taro from '@tarojs/taro'
 import './index.scss'
 
-// 模拟数据（后续替换为真实API）
 const museums = [
-  {
-    id: '001',
-    name: '卢浮宫',
-    nameEn: 'Louvre Museum',
-    city: '巴黎，法国',
-    count: 50,
-    image: 'https://images.metmuseum.org/CRDImages/ep/original/DT1567.jpg',
-  },
-  {
-    id: '002',
-    name: '大英博物馆',
-    nameEn: 'British Museum',
-    city: '伦敦，英国',
-    count: 40,
-    image: 'https://images.metmuseum.org/CRDImages/ep/original/DT1947.jpg',
-  },
-  {
-    id: '003',
-    name: '故宫博物院',
-    nameEn: 'The Palace Museum',
-    city: '北京，中国',
-    count: 35,
-    image: 'https://images.metmuseum.org/CRDImages/ep/original/DP251139.jpg',
-  },
-  {
-    id: '004',
-    name: '大都会艺术博物馆',
-    nameEn: 'The Metropolitan Museum',
-    city: '纽约，美国',
-    count: 60,
-    image: 'https://images.metmuseum.org/CRDImages/ep/original/DT1502_cropped.jpg',
-  },
+  { id: '001', name: '卢浮宫', nameEn: 'Louvre Museum', city: '巴黎，法国', count: 50, image: 'https://images.metmuseum.org/CRDImages/ep/original/DT1567.jpg' },
+  { id: '002', name: '大英博物馆', nameEn: 'British Museum', city: '伦敦，英国', count: 40, image: 'https://images.metmuseum.org/CRDImages/ep/original/DT1947.jpg' },
+  { id: '003', name: '故宫博物院', nameEn: 'The Palace Museum', city: '北京，中国', count: 35, image: 'https://images.metmuseum.org/CRDImages/ep/original/DP251139.jpg' },
+  { id: '004', name: '大都会艺术博物馆', nameEn: 'The Metropolitan Museum', city: '纽约，美国', count: 60, image: 'https://images.metmuseum.org/CRDImages/ep/original/DT1502_cropped.jpg' },
 ]
 
 const artists = [
@@ -47,13 +19,23 @@ const artists = [
   { id: '006', name: '拉斐尔', period: '文艺复兴', years: '1483-1520', count: 9, image: 'https://images.metmuseum.org/CRDImages/ep/original/DP-13139-001.jpg' },
 ]
 
+// 跳转博物馆详情（暂时跳转到画作详情页做示意）
+const goToMuseum = (id: string) => {
+  Taro.showToast({ title: '博物馆详情页开发中', icon: 'none', duration: 1500 })
+}
+
+// 跳转艺术家详情
+const goToArtist = (id: string) => {
+  Taro.showToast({ title: '艺术家详情页开发中', icon: 'none', duration: 1500 })
+}
+
 export default function Explore() {
   const [activeTab, setActiveTab] = useState<'museum' | 'artist'>('museum')
 
   return (
     <View className='explore'>
 
-      {/* 顶部搜索框 */}
+      {/* 搜索框 */}
       <View className='search-bar'>
         <Text className='search-icon'>🔍</Text>
         <Text className='search-placeholder'>搜索博物馆、艺术家...</Text>
@@ -79,12 +61,8 @@ export default function Explore() {
       {activeTab === 'museum' && (
         <ScrollView scrollY={true} className='list-container'>
           {museums.map(museum => (
-            <View className='museum-item' key={museum.id}>
-              <Image
-                className='museum-image'
-                src={museum.image}
-                mode='aspectFill'
-              />
+            <View className='museum-item' key={museum.id} onClick={() => goToMuseum(museum.id)}>
+              <Image className='museum-image' src={museum.image} mode='aspectFill' />
               <View className='museum-info'>
                 <Text className='museum-name'>{museum.name}</Text>
                 <Text className='museum-name-en'>{museum.nameEn}</Text>
@@ -102,12 +80,8 @@ export default function Explore() {
         <ScrollView scrollY={true} className='list-container'>
           <View className='artist-grid'>
             {artists.map(artist => (
-              <View className='artist-item' key={artist.id}>
-                <Image
-                  className='artist-avatar'
-                  src={artist.image}
-                  mode='aspectFill'
-                />
+              <View className='artist-item' key={artist.id} onClick={() => goToArtist(artist.id)}>
+                <Image className='artist-avatar' src={artist.image} mode='aspectFill' />
                 <View className='artist-info'>
                   <Text className='artist-name'>{artist.name}</Text>
                   <Text className='artist-period'>{artist.period}</Text>

@@ -1,9 +1,8 @@
 import { View, Text, Image, ScrollView } from '@tarojs/components'
 import { useLoad } from '@tarojs/taro'
+import Taro from '@tarojs/taro'
 import './index.scss'
 
-// 模拟数据（后续替换为真实API数据）
-// 使用大都会艺术博物馆开放API图片（公共领域，免费稳定）
 const featuredArtwork = {
   id: '001',
   title: '星夜',
@@ -32,6 +31,21 @@ const recentArtworks = [
   { id: '005', title: '呐喊', artist: '蒙克', image: 'https://images.metmuseum.org/CRDImages/ep/original/DT1502_cropped.jpg' },
 ]
 
+// 跳转画作详情
+const goToArtwork = (id: string) => {
+  Taro.navigateTo({ url: `/pages/artwork/index?id=${id}` })
+}
+
+// 跳转艺术家详情
+const goToArtist = (id: string) => {
+  Taro.showToast({ title: '艺术家页面开发中', icon: 'none' })
+}
+
+// 跳转博物馆详情
+const goToMuseum = (id: string) => {
+  Taro.showToast({ title: '博物馆页面开发中', icon: 'none' })
+}
+
 export default function Index() {
   useLoad(() => {
     console.log('首页加载完成')
@@ -54,12 +68,8 @@ export default function Index() {
         <View className='section-title-row'>
           <Text className='section-title'>今日推荐</Text>
         </View>
-        <View className='featured-card'>
-          <Image
-            className='featured-image'
-            src={featuredArtwork.image}
-            mode='aspectFill'
-          />
+        <View className='featured-card' onClick={() => goToArtwork(featuredArtwork.id)}>
+          <Image className='featured-image' src={featuredArtwork.image} mode='aspectFill' />
           <View className='featured-overlay'>
             <Text className='featured-title'>{featuredArtwork.title}</Text>
             <Text className='featured-artist'>{featuredArtwork.artist} · {featuredArtwork.museum}</Text>
@@ -75,12 +85,8 @@ export default function Index() {
         </View>
         <ScrollView className='artist-scroll' scrollX={true}>
           {artists.map(artist => (
-            <View className='artist-item' key={artist.id}>
-              <Image
-                className='artist-avatar'
-                src={artist.image}
-                mode='aspectFill'
-              />
+            <View className='artist-item' key={artist.id} onClick={() => goToArtist(artist.id)}>
+              <Image className='artist-avatar' src={artist.image} mode='aspectFill' />
               <Text className='artist-name'>{artist.name}</Text>
             </View>
           ))}
@@ -95,12 +101,8 @@ export default function Index() {
         </View>
         <ScrollView className='museum-scroll' scrollX={true}>
           {museums.map(museum => (
-            <View className='museum-card' key={museum.id}>
-              <Image
-                className='museum-image'
-                src={museum.image}
-                mode='aspectFill'
-              />
+            <View className='museum-card' key={museum.id} onClick={() => goToMuseum(museum.id)}>
+              <Image className='museum-image' src={museum.image} mode='aspectFill' />
               <View className='museum-overlay'>
                 <Text className='museum-name'>{museum.name}</Text>
                 <Text className='museum-city'>{museum.city}</Text>
@@ -118,12 +120,8 @@ export default function Index() {
         </View>
         <View className='artwork-grid'>
           {recentArtworks.map(artwork => (
-            <View className='artwork-card' key={artwork.id}>
-              <Image
-                className='artwork-image'
-                src={artwork.image}
-                mode='aspectFill'
-              />
+            <View className='artwork-card' key={artwork.id} onClick={() => goToArtwork(artwork.id)}>
+              <Image className='artwork-image' src={artwork.image} mode='aspectFill' />
               <View className='artwork-info'>
                 <Text className='artwork-title'>{artwork.title}</Text>
                 <Text className='artwork-artist'>{artwork.artist}</Text>
@@ -133,7 +131,6 @@ export default function Index() {
         </View>
       </View>
 
-      {/* 底部留白 */}
       <View className='bottom-space' />
 
     </ScrollView>
