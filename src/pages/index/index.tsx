@@ -3,32 +3,33 @@ import { useLoad } from '@tarojs/taro'
 import Taro from '@tarojs/taro'
 import './index.scss'
 
+// 使用芝加哥艺术博物馆API图片（稳定、免费、高清）
 const featuredArtwork = {
   id: '001',
   title: '星夜',
   artist: '文森特·梵高',
   museum: '纽约现代艺术博物馆',
-  image: 'https://images.metmuseum.org/CRDImages/ep/original/DT1567.jpg',
+  image: 'https://www.artic.edu/iiif/2/1adf2696-8489-499b-cad2-821d7fde4b33/full/843,/0/default.jpg',
 }
 
 const artists = [
-  { id: '001', name: '梵高', image: 'https://images.metmuseum.org/CRDImages/ep/original/DT1502_cropped.jpg' },
-  { id: '002', name: '达芬奇', image: 'https://images.metmuseum.org/CRDImages/ep/original/DP-13139-001.jpg' },
-  { id: '003', name: '莫奈', image: 'https://images.metmuseum.org/CRDImages/ep/original/DT1947.jpg' },
-  { id: '004', name: '维米尔', image: 'https://images.metmuseum.org/CRDImages/ep/original/DP251139.jpg' },
+  { id: '001', name: '梵高', image: 'https://www.artic.edu/iiif/2/25c31d8d-21a4-9ea1-1d73-6a2eca4dda7e/full/200,/0/default.jpg' },
+  { id: '002', name: '达芬奇', image: 'https://www.artic.edu/iiif/2/2d484387-2509-5e8e-2c43-a9d9c6ef9bc6/full/200,/0/default.jpg' },
+  { id: '003', name: '莫奈', image: 'https://www.artic.edu/iiif/2/3c27b499-af56-f0d5-93b5-a7f2f1ad5813/full/200,/0/default.jpg' },
+  { id: '004', name: '维米尔', image: 'https://www.artic.edu/iiif/2/25c31d8d-21a4-9ea1-1d73-6a2eca4dda7e/full/200,/0/default.jpg' },
 ]
 
 const museums = [
-  { id: '001', name: '卢浮宫', city: '巴黎', image: 'https://images.metmuseum.org/CRDImages/ep/original/DT1567.jpg' },
-  { id: '002', name: '大英博物馆', city: '伦敦', image: 'https://images.metmuseum.org/CRDImages/ep/original/DT1947.jpg' },
-  { id: '003', name: '故宫博物院', city: '北京', image: 'https://images.metmuseum.org/CRDImages/ep/original/DP251139.jpg' },
+  { id: '001', name: '卢浮宫', city: '巴黎', image: 'https://www.artic.edu/iiif/2/1adf2696-8489-499b-cad2-821d7fde4b33/full/400,/0/default.jpg' },
+  { id: '002', name: '大英博物馆', city: '伦敦', image: 'https://www.artic.edu/iiif/2/3c27b499-af56-f0d5-93b5-a7f2f1ad5813/full/400,/0/default.jpg' },
+  { id: '003', name: '故宫博物院', city: '北京', image: 'https://www.artic.edu/iiif/2/2d484387-2509-5e8e-2c43-a9d9c6ef9bc6/full/400,/0/default.jpg' },
 ]
 
 const recentArtworks = [
-  { id: '002', title: '蒙娜丽莎', artist: '达芬奇', image: 'https://images.metmuseum.org/CRDImages/ep/original/DP-13139-001.jpg' },
-  { id: '003', title: '睡莲', artist: '莫奈', image: 'https://images.metmuseum.org/CRDImages/ep/original/DT1947.jpg' },
-  { id: '004', title: '戴珍珠耳环的少女', artist: '维米尔', image: 'https://images.metmuseum.org/CRDImages/ep/original/DP251139.jpg' },
-  { id: '005', title: '呐喊', artist: '蒙克', image: 'https://images.metmuseum.org/CRDImages/ep/original/DT1502_cropped.jpg' },
+  { id: '002', title: '蒙娜丽莎', artist: '达芬奇', image: 'https://www.artic.edu/iiif/2/2d484387-2509-5e8e-2c43-a9d9c6ef9bc6/full/400,/0/default.jpg' },
+  { id: '003', title: '睡莲', artist: '莫奈', image: 'https://www.artic.edu/iiif/2/3c27b499-af56-f0d5-93b5-a7f2f1ad5813/full/400,/0/default.jpg' },
+  { id: '004', title: '戴珍珠耳环的少女', artist: '维米尔', image: 'https://www.artic.edu/iiif/2/25c31d8d-21a4-9ea1-1d73-6a2eca4dda7e/full/400,/0/default.jpg' },
+  { id: '005', title: '呐喊', artist: '蒙克', image: 'https://www.artic.edu/iiif/2/1adf2696-8489-499b-cad2-821d7fde4b33/full/400,/0/default.jpg' },
 ]
 
 // 跳转画作详情
