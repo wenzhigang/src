@@ -1,0 +1,190 @@
+$primary: #1A3C34;
+$gold: #C9A84C;
+$bg: #F8F5F0;
+$text-main: #1A1A1A;
+$text-sub: #666666;
+$white: #FFFFFF;
+
+.explore {
+  background-color: $bg;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+// 搜索框
+.search-bar {
+  display: flex;
+  align-items: center;
+  background-color: $white;
+  margin: 12px 16px;
+  border-radius: 20px;
+  height: 36px;
+  padding: 0 12px;
+  gap: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.search-icon {
+  font-size: 14px;
+}
+
+.search-placeholder {
+  font-size: 13px;
+  color: #999999;
+}
+
+// 切换标签
+.tabs {
+  display: flex;
+  background-color: $white;
+  margin: 0 16px 12px;
+  border-radius: 10px;
+  padding: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.tab-item {
+  flex: 1;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s;
+
+  &.active {
+    background-color: $primary;
+
+    .tab-text {
+      color: $white;
+      font-weight: 600;
+    }
+  }
+}
+
+.tab-text {
+  font-size: 14px;
+  color: $text-sub;
+}
+
+// 列表容器
+.list-container {
+  flex: 1;
+  padding: 0 16px;
+  height: calc(100vh - 180px);
+}
+
+// 博物馆列表项
+.museum-item {
+  display: flex;
+  align-items: center;
+  background-color: $white;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.museum-image {
+  width: 100px;
+  height: 90px;
+  flex-shrink: 0;
+}
+
+.museum-info {
+  flex: 1;
+  padding: 10px 12px;
+}
+
+.museum-name {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: $text-main;
+}
+
+.museum-name-en {
+  display: block;
+  font-size: 11px;
+  color: $text-sub;
+  margin-top: 2px;
+}
+
+.museum-city {
+  display: block;
+  font-size: 12px;
+  color: $text-sub;
+  margin-top: 6px;
+}
+
+.museum-count {
+  display: block;
+  font-size: 11px;
+  color: $gold;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.arrow {
+  font-size: 20px;
+  color: #CCCCCC;
+  padding-right: 12px;
+}
+
+// 艺术家网格
+.artist-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.artist-item {
+  display: flex;
+  align-items: center;
+  background-color: $white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.artist-avatar {
+  width: 90px;
+  height: 90px;
+  flex-shrink: 0;
+}
+
+.artist-info {
+  flex: 1;
+  padding: 12px 14px;
+}
+
+.artist-name {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: $text-main;
+}
+
+.artist-period {
+  display: block;
+  font-size: 12px;
+  color: $primary;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.artist-years {
+  display: block;
+  font-size: 11px;
+  color: $text-sub;
+  margin-top: 2px;
+}
+
+.artist-count {
+  display: block;
+  font-size: 11px;
+  color: $gold;
+  margin-top: 6px;
+  font-weight: 500;
+}
