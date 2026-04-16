@@ -3,46 +3,43 @@ import { useLoad } from '@tarojs/taro'
 import Taro from '@tarojs/taro'
 import './index.scss'
 
-// 使用芝加哥艺术博物馆API图片（稳定、免费、高清）
+// 使用 Wikimedia 稳定图片直链（公共领域，免费）
 const featuredArtwork = {
   id: '001',
   title: '星夜',
   artist: '文森特·梵高',
   museum: '纽约现代艺术博物馆',
-  image: 'https://www.artic.edu/iiif/2/1adf2696-8489-499b-cad2-821d7fde4b33/full/843,/0/default.jpg',
+  image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/600px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg',
 }
 
 const artists = [
-  { id: '001', name: '梵高', image: 'https://www.artic.edu/iiif/2/25c31d8d-21a4-9ea1-1d73-6a2eca4dda7e/full/200,/0/default.jpg' },
-  { id: '002', name: '达芬奇', image: 'https://www.artic.edu/iiif/2/2d484387-2509-5e8e-2c43-a9d9c6ef9bc6/full/200,/0/default.jpg' },
-  { id: '003', name: '莫奈', image: 'https://www.artic.edu/iiif/2/3c27b499-af56-f0d5-93b5-a7f2f1ad5813/full/200,/0/default.jpg' },
-  { id: '004', name: '维米尔', image: 'https://www.artic.edu/iiif/2/25c31d8d-21a4-9ea1-1d73-6a2eca4dda7e/full/200,/0/default.jpg' },
+  { id: '001', name: '梵高', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Vincent_van_Gogh_-_Self-Portrait_-_Google_Art_Project_%28454045%29.jpg/200px-Vincent_van_Gogh_-_Self-Portrait_-_Google_Art_Project_%28454045%29.jpg' },
+  { id: '002', name: '达芬奇', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/200px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg' },
+  { id: '003', name: '莫奈', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg/200px-Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg' },
+  { id: '004', name: '维米尔', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Meisje_met_de_parel.jpg/200px-Meisje_met_de_parel.jpg' },
 ]
 
 const museums = [
-  { id: '001', name: '卢浮宫', city: '巴黎', image: 'https://www.artic.edu/iiif/2/1adf2696-8489-499b-cad2-821d7fde4b33/full/400,/0/default.jpg' },
-  { id: '002', name: '大英博物馆', city: '伦敦', image: 'https://www.artic.edu/iiif/2/3c27b499-af56-f0d5-93b5-a7f2f1ad5813/full/400,/0/default.jpg' },
-  { id: '003', name: '故宫博物院', city: '北京', image: 'https://www.artic.edu/iiif/2/2d484387-2509-5e8e-2c43-a9d9c6ef9bc6/full/400,/0/default.jpg' },
+  { id: '001', name: '卢浮宫', city: '巴黎', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Louvre_Museum_Wikimedia_Commons.jpg/400px-Louvre_Museum_Wikimedia_Commons.jpg' },
+  { id: '002', name: '大英博物馆', city: '伦敦', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/British_Museum_from_NE_2.JPG/400px-British_Museum_from_NE_2.JPG' },
+  { id: '003', name: '故宫博物院', city: '北京', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Beijing_China_Forbidden-City-01.jpg/400px-Beijing_China_Forbidden-City-01.jpg' },
 ]
 
 const recentArtworks = [
-  { id: '002', title: '蒙娜丽莎', artist: '达芬奇', image: 'https://www.artic.edu/iiif/2/2d484387-2509-5e8e-2c43-a9d9c6ef9bc6/full/400,/0/default.jpg' },
-  { id: '003', title: '睡莲', artist: '莫奈', image: 'https://www.artic.edu/iiif/2/3c27b499-af56-f0d5-93b5-a7f2f1ad5813/full/400,/0/default.jpg' },
-  { id: '004', title: '戴珍珠耳环的少女', artist: '维米尔', image: 'https://www.artic.edu/iiif/2/25c31d8d-21a4-9ea1-1d73-6a2eca4dda7e/full/400,/0/default.jpg' },
-  { id: '005', title: '呐喊', artist: '蒙克', image: 'https://www.artic.edu/iiif/2/1adf2696-8489-499b-cad2-821d7fde4b33/full/400,/0/default.jpg' },
+  { id: '002', title: '蒙娜丽莎', artist: '达芬奇', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/300px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg' },
+  { id: '003', title: '睡莲', artist: '莫奈', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg/300px-Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg' },
+  { id: '004', title: '戴珍珠耳环的少女', artist: '维米尔', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Meisje_met_de_parel.jpg/300px-Meisje_met_de_parel.jpg' },
+  { id: '005', title: '星夜', artist: '梵高', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/300px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg' },
 ]
 
-// 跳转画作详情
 const goToArtwork = (id: string) => {
   Taro.navigateTo({ url: `/pages/artwork/index?id=${id}` })
 }
 
-// 跳转艺术家详情
 const goToArtist = (id: string) => {
   Taro.showToast({ title: '艺术家页面开发中', icon: 'none' })
 }
 
-// 跳转博物馆详情
 const goToMuseum = (id: string) => {
   Taro.showToast({ title: '博物馆页面开发中', icon: 'none' })
 }
