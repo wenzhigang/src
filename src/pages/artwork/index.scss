@@ -1,0 +1,301 @@
+$primary: #1A3C34;
+$gold: #C9A84C;
+$bg-dark: #141414;
+$bg-card: #1E1E1E;
+$text-main: #FFFFFF;
+$text-sub: rgba(255,255,255,0.6);
+$white: #FFFFFF;
+
+.artwork-detail {
+  background-color: $bg-dark;
+  min-height: 100vh;
+  position: relative;
+}
+
+.scroll-container {
+  height: 100vh;
+}
+
+// 图片区域
+.image-container {
+  position: relative;
+  width: 100%;
+  background-color: #000000;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.artwork-image {
+  width: 100%;
+  height: 320px;
+}
+
+// 标注点
+.annotation-dot {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-radius: 14px;
+  background-color: rgba(201,168,76,0.85);
+  border: 2px solid #C9A84C;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%);
+
+  &.active {
+    background-color: #C9A84C;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+}
+
+.dot-text {
+  color: $white;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+// 标注弹窗
+.annotation-popup {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  background-color: rgba(0,0,0,0.85);
+  border-radius: 10px;
+  padding: 12px;
+  border-left: 3px solid #C9A84C;
+}
+
+.popup-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: $gold;
+  margin-bottom: 4px;
+}
+
+.popup-desc {
+  display: block;
+  font-size: 12px;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.6;
+}
+
+// 信息区域
+.info-section {
+  padding: 20px 16px;
+  background-color: $bg-dark;
+}
+
+// AI标识
+.ai-badge {
+  background-color: #FF9800;
+  border-radius: 4px;
+  padding: 4px 10px;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.ai-text {
+  font-size: 11px;
+  color: $white;
+  font-weight: 500;
+}
+
+// 标题
+.artwork-title {
+  display: block;
+  font-size: 24px;
+  font-weight: bold;
+  color: $text-main;
+  margin-bottom: 4px;
+}
+
+.artwork-title-en {
+  display: block;
+  font-size: 14px;
+  color: $text-sub;
+  margin-bottom: 16px;
+}
+
+// 元信息
+.meta-row {
+  display: flex;
+  margin-bottom: 12px;
+  gap: 16px;
+}
+
+.meta-item {
+  flex: 1;
+
+  &.full-width {
+    flex: none;
+    width: 100%;
+  }
+}
+
+.meta-label {
+  display: block;
+  font-size: 11px;
+  color: $text-sub;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.meta-value {
+  display: block;
+  font-size: 14px;
+  color: $text-main;
+  font-weight: 500;
+
+  &.artist-link {
+    color: $gold;
+  }
+}
+
+// 标签
+.tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.tag {
+  font-size: 12px;
+  color: $gold;
+  border: 1px solid rgba(201,168,76,0.5);
+  border-radius: 12px;
+  padding: 3px 10px;
+}
+
+// 讲解内容
+.description-section {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.section-title {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: $text-main;
+  margin-bottom: 12px;
+}
+
+.description {
+  display: block;
+  font-size: 15px;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.8;
+}
+
+.read-more {
+  display: block;
+  font-size: 13px;
+  color: $gold;
+  margin-top: 8px;
+}
+
+// 艺术家链接
+.artist-link-row {
+  margin-top: 20px;
+  padding: 14px;
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 10px;
+  background-color: rgba(201,168,76,0.05);
+}
+
+.artist-link-text {
+  font-size: 14px;
+  color: $gold;
+  font-weight: 500;
+}
+
+// 底部留白
+.bottom-space {
+  height: 80px;
+}
+
+// 顶部收藏按钮
+.top-actions {
+  position: fixed;
+  top: 44px;
+  right: 16px;
+  z-index: 100;
+}
+
+.favorite-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.favorite-icon {
+  font-size: 18px;
+}
+
+// 底部语音播放器
+.audio-player {
+  position: fixed;
+  bottom: 50px;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background-color: rgba(0,0,0,0.9);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 10px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.audio-icon {
+  font-size: 18px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 3px;
+  background-color: rgba(255,255,255,0.2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: $gold;
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.audio-time {
+  font-size: 11px;
+  color: $text-sub;
+  white-space: nowrap;
+}
+
+.play-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background-color: $gold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.play-icon {
+  font-size: 16px;
+  color: $white;
+}

@@ -5,6 +5,7 @@ export default defineAppConfig({
     'pages/scan/index',
     'pages/education/index',
     'pages/profile/index',
+    'pages/artwork/index',
   ],
   window: {
     backgroundTextStyle: 'light',
