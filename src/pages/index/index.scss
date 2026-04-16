@@ -224,3 +224,17 @@ $white: #FFFFFF;
 .bottom-space {
   height: 60px;
 }
+
+// 加载状态
+.loading-container {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $bg;
+}
+
+.loading-text {
+  font-size: 15px;
+  color: $text-sub;
+}

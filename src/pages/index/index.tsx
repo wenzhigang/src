@@ -1,53 +1,95 @@
 import { View, Text, Image, ScrollView } from '@tarojs/components'
-import { useLoad } from '@tarojs/taro'
+import { useState, useEffect } from 'react'
 import Taro from '@tarojs/taro'
 import './index.scss'
 
-// 使用 Wikimedia 稳定图片直链（公共领域，免费）
-const featuredArtwork = {
-  id: '001',
-  title: '星夜',
-  artist: '文森特·梵高',
-  museum: '纽约现代艺术博物馆',
-  image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/600px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg',
+// 数据类型定义
+interface Artwork {
+  _id: string
+  title: string
+  artist_name: string
+  museum_name: string
+  image_url: string
+  is_featured: boolean
 }
 
-const artists = [
-  { id: '001', name: '梵高', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Vincent_van_Gogh_-_Self-Portrait_-_Google_Art_Project_%28454045%29.jpg/200px-Vincent_van_Gogh_-_Self-Portrait_-_Google_Art_Project_%28454045%29.jpg' },
-  { id: '002', name: '达芬奇', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/200px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg' },
-  { id: '003', name: '莫奈', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg/200px-Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg' },
-  { id: '004', name: '维米尔', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Meisje_met_de_parel.jpg/200px-Meisje_met_de_parel.jpg' },
-]
-
-const museums = [
-  { id: '001', name: '卢浮宫', city: '巴黎', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Louvre_Museum_Wikimedia_Commons.jpg/400px-Louvre_Museum_Wikimedia_Commons.jpg' },
-  { id: '002', name: '大英博物馆', city: '伦敦', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/British_Museum_from_NE_2.JPG/400px-British_Museum_from_NE_2.JPG' },
-  { id: '003', name: '故宫博物院', city: '北京', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Beijing_China_Forbidden-City-01.jpg/400px-Beijing_China_Forbidden-City-01.jpg' },
-]
-
-const recentArtworks = [
-  { id: '002', title: '蒙娜丽莎', artist: '达芬奇', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/300px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg' },
-  { id: '003', title: '睡莲', artist: '莫奈', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg/300px-Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg' },
-  { id: '004', title: '戴珍珠耳环的少女', artist: '维米尔', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Meisje_met_de_parel.jpg/300px-Meisje_met_de_parel.jpg' },
-  { id: '005', title: '星夜', artist: '梵高', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/300px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg' },
-]
-
-const goToArtwork = (id: string) => {
-  Taro.navigateTo({ url: `/pages/artwork/index?id=${id}` })
+interface Artist {
+  _id: string
+  name: string
+  avatar_url: string
 }
 
-const goToArtist = (id: string) => {
-  Taro.showToast({ title: '艺术家页面开发中', icon: 'none' })
-}
-
-const goToMuseum = (id: string) => {
-  Taro.showToast({ title: '博物馆页面开发中', icon: 'none' })
+interface Museum {
+  _id: string
+  name: string
+  city: string
+  cover_url: string
 }
 
 export default function Index() {
-  useLoad(() => {
-    console.log('首页加载完成')
-  })
+  const [featuredArtwork, setFeaturedArtwork] = useState<Artwork | null>(null)
+  const [artists, setArtists] = useState<Artist[]>([])
+  const [museums, setMuseums] = useState<Museum[]>([])
+  const [recentArtworks, setRecentArtworks] = useState<Artwork[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
+    try {
+      const db = Taro.cloud.database()
+
+      // 并行请求所有数据
+      const [artworksRes, artistsRes, museumsRes] = await Promise.all([
+        db.collection('artworks').limit(10).get(),
+        db.collection('artists').limit(10).get(),
+        db.collection('museums').limit(10).get(),
+      ])
+
+      const artworks = artworksRes.data as Artwork[]
+      const artistsData = artistsRes.data as Artist[]
+      const museumsData = museumsRes.data as Museum[]
+
+      // 设置今日推荐（取第一条is_featured为true的画作）
+      const featured = artworks.find(a => a.is_featured) || artworks[0]
+      setFeaturedArtwork(featured)
+
+      // 设置最新收录
+      setRecentArtworks(artworks.slice(0, 4))
+
+      // 设置艺术家和博物馆
+      setArtists(artistsData)
+      setMuseums(museumsData)
+
+    } catch (err) {
+      console.error('加载数据失败：', err)
+      Taro.showToast({ title: '数据加载失败', icon: 'none' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const goToArtwork = (id: string) => {
+    Taro.navigateTo({ url: `/pages/artwork/index?id=${id}` })
+  }
+
+  const goToArtist = (id: string) => {
+    Taro.showToast({ title: '艺术家页面开发中', icon: 'none' })
+  }
+
+  const goToMuseum = (id: string) => {
+    Taro.showToast({ title: '博物馆页面开发中', icon: 'none' })
+  }
+
+  if (loading) {
+    return (
+      <View className='loading-container'>
+        <Text className='loading-text'>画说正在加载...</Text>
+      </View>
+    )
+  }
 
   return (
     <ScrollView className='home' scrollY={true}>
@@ -62,75 +104,82 @@ export default function Index() {
       </View>
 
       {/* 今日推荐 */}
-      <View className='section'>
-        <View className='section-title-row'>
-          <Text className='section-title'>今日推荐</Text>
-        </View>
-        <View className='featured-card' onClick={() => goToArtwork(featuredArtwork.id)}>
-          <Image className='featured-image' src={featuredArtwork.image} mode='aspectFill' />
-          <View className='featured-overlay'>
-            <Text className='featured-title'>{featuredArtwork.title}</Text>
-            <Text className='featured-artist'>{featuredArtwork.artist} · {featuredArtwork.museum}</Text>
+      {featuredArtwork && (
+        <View className='section'>
+          <View className='section-title-row'>
+            <Text className='section-title'>今日推荐</Text>
+          </View>
+          <View className='featured-card' onClick={() => goToArtwork(featuredArtwork._id)}>
+            <Image className='featured-image' src={featuredArtwork.image_url} mode='aspectFill' />
+            <View className='featured-overlay'>
+              <Text className='featured-title'>{featuredArtwork.title}</Text>
+              <Text className='featured-artist'>{featuredArtwork.artist_name} · {featuredArtwork.museum_name}</Text>
+            </View>
           </View>
         </View>
-      </View>
+      )}
 
       {/* 热门艺术家 */}
-      <View className='section'>
-        <View className='section-title-row'>
-          <Text className='section-title'>热门艺术家</Text>
-          <Text className='section-more'>查看全部</Text>
+      {artists.length > 0 && (
+        <View className='section'>
+          <View className='section-title-row'>
+            <Text className='section-title'>热门艺术家</Text>
+            <Text className='section-more'>查看全部</Text>
+          </View>
+          <ScrollView className='artist-scroll' scrollX={true}>
+            {artists.map(artist => (
+              <View className='artist-item' key={artist._id} onClick={() => goToArtist(artist._id)}>
+                <Image className='artist-avatar' src={artist.avatar_url} mode='aspectFill' />
+                <Text className='artist-name'>{artist.name.split('·').pop()}</Text>
+              </View>
+            ))}
+          </ScrollView>
         </View>
-        <ScrollView className='artist-scroll' scrollX={true}>
-          {artists.map(artist => (
-            <View className='artist-item' key={artist.id} onClick={() => goToArtist(artist.id)}>
-              <Image className='artist-avatar' src={artist.image} mode='aspectFill' />
-              <Text className='artist-name'>{artist.name}</Text>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
+      )}
 
       {/* 博物馆 */}
-      <View className='section'>
-        <View className='section-title-row'>
-          <Text className='section-title'>博物馆</Text>
-          <Text className='section-more'>查看全部</Text>
-        </View>
-        <ScrollView className='museum-scroll' scrollX={true}>
-          {museums.map(museum => (
-            <View className='museum-card' key={museum.id} onClick={() => goToMuseum(museum.id)}>
-              <Image className='museum-image' src={museum.image} mode='aspectFill' />
-              <View className='museum-overlay'>
-                <Text className='museum-name'>{museum.name}</Text>
-                <Text className='museum-city'>{museum.city}</Text>
+      {museums.length > 0 && (
+        <View className='section'>
+          <View className='section-title-row'>
+            <Text className='section-title'>博物馆</Text>
+            <Text className='section-more'>查看全部</Text>
+          </View>
+          <ScrollView className='museum-scroll' scrollX={true}>
+            {museums.map(museum => (
+              <View className='museum-card' key={museum._id} onClick={() => goToMuseum(museum._id)}>
+                <Image className='museum-image' src={museum.cover_url} mode='aspectFill' />
+                <View className='museum-overlay'>
+                  <Text className='museum-name'>{museum.name}</Text>
+                  <Text className='museum-city'>{museum.city}</Text>
+                </View>
               </View>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
 
       {/* 最新收录 */}
-      <View className='section'>
-        <View className='section-title-row'>
-          <Text className='section-title'>最新收录</Text>
-          <Text className='section-more'>查看全部</Text>
-        </View>
-        <View className='artwork-grid'>
-          {recentArtworks.map(artwork => (
-            <View className='artwork-card' key={artwork.id} onClick={() => goToArtwork(artwork.id)}>
-              <Image className='artwork-image' src={artwork.image} mode='aspectFill' />
-              <View className='artwork-info'>
-                <Text className='artwork-title'>{artwork.title}</Text>
-                <Text className='artwork-artist'>{artwork.artist}</Text>
+      {recentArtworks.length > 0 && (
+        <View className='section'>
+          <View className='section-title-row'>
+            <Text className='section-title'>最新收录</Text>
+            <Text className='section-more'>查看全部</Text>
+          </View>
+          <View className='artwork-grid'>
+            {recentArtworks.map(artwork => (
+              <View className='artwork-card' key={artwork._id} onClick={() => goToArtwork(artwork._id)}>
+                <Image className='artwork-image' src={artwork.image_url} mode='aspectFill' />
+                <View className='artwork-info'>
+                  <Text className='artwork-title'>{artwork.title}</Text>
+                  <Text className='artwork-artist'>{artwork.artist_name}</Text>
+                </View>
               </View>
-            </View>
-          ))}
+            ))}
+          </View>
         </View>
-      </View>
+      )}
 
       <View className='bottom-space' />
-
     </ScrollView>
   )
 }
