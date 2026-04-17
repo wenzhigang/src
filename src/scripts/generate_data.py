@@ -18,7 +18,7 @@ museums = [
         "city": "巴黎",
         "country": "法国",
         "description": "世界上最大、参观人数最多的艺术博物馆，收藏了约38万件艺术品，其中展出约35000件。馆内珍藏着达芬奇的《蒙娜丽莎》、米洛斯的《维纳斯》等旷世名作。",
-        "cover_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Louvre_Museum_Wikimedia_Commons.jpg/800px-Louvre_Museum_Wikimedia_Commons.jpg",
+        "cover_url": "https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/louvre.jpg",
         "artwork_count": 5,
         "founded_year": 1793,
         "website": "https://www.louvre.fr"
@@ -30,7 +30,7 @@ museums = [
         "city": "伦敦",
         "country": "英国",
         "description": "世界上历史最悠久、规模最宏伟的综合性博物馆之一，收藏来自全球各地超过800万件藏品，涵盖人类文明史两百万年。",
-        "cover_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/British_Museum_from_NE_2.JPG/800px-British_Museum_from_NE_2.JPG",
+        "cover_url": "https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/british_museum.jpg",
         "artwork_count": 3,
         "founded_year": 1753,
         "website": "https://www.britishmuseum.org"
@@ -42,7 +42,7 @@ museums = [
         "city": "北京",
         "country": "中国",
         "description": "中国最大的古代文化艺术博物馆，建立在明清两朝皇宫紫禁城的基础上，收藏有超过186万件珍贵文物，是中华文明的瑰宝。",
-        "cover_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Beijing_China_Forbidden-City-01.jpg/800px-Beijing_China_Forbidden-City-01.jpg",
+        "cover_url": "https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/forbidden_city.jpg",
         "artwork_count": 3,
         "founded_year": 1925,
         "website": "https://www.dpm.org.cn"
@@ -67,7 +67,7 @@ artists = [
             "他的笔记本中有超过13000页的素描和文字，大多用镜像文字写成",
             "他设计了最早的飞行器、太阳能装置和计算器草图"
         ],
-        "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/200px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg",
+        "avatar_url": "https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/mona_lisa.jpg",
         "artwork_count": 3
     },
     {
@@ -84,7 +84,7 @@ artists = [
             "他和弟弟提奥共通信超过650封，现已成为艺术史最重要的文献之一",
             "《星夜》创作于精神病院，透过铁窗看见的夜空"
         ],
-        "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/200px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg",
+        "avatar_url": "https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/starry_night.jpg",
         "artwork_count": 2
     },
     {
@@ -101,7 +101,7 @@ artists = [
             "莫奈晚年患有严重的白内障，但仍坚持创作睡莲系列",
             "他的吉维尼花园完全按照绘画需求设计，是'先有画后有园'"
         ],
-        "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg/200px-Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg",
+        "avatar_url": "https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/water_lilies.jpg",
         "artwork_count": 2
     }
 ]
@@ -123,7 +123,7 @@ artworks = [
         "medium": "木板油画",
         "size": "77 × 53 cm",
         "description": "500多年来，她的微笑从未停止让人着迷。达芬奇为这幅画耗费了整整16年，传说他随身携带着它，直到生命的最后一刻。画中女子究竟是谁？为何她的表情既似微笑又似忧愁？这个谜至今无解，却让她成为世界上被复制最多、被研究最多、被参观最多的画作。\n\n达芬奇在这幅画中运用了他发明的'晕涂法'——用极细腻的过渡处理光影，使人物面部没有任何清晰的轮廓线，如同笼罩在朦胧的雾气中。这种技法让蒙娜丽莎的微笑在不同角度、不同距离观看时，呈现出截然不同的情绪。\n\n有趣的是，这幅画最初并不出名。1911年，一名意大利工人将其从卢浮宫盗走，两年后的追寻与发现，才让全世界开始关注这位神秘的女士。",
-        "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/402px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg",
+        "image_url": "https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/mona_lisa.jpg",
         "tags": ["文艺复兴", "肖像画", "油画", "卢浮宫"],
         "is_featured": True,
         "view_count": 0,
@@ -146,7 +146,7 @@ artworks = [
         "medium": "油画",
         "size": "73.7 × 92.1 cm",
         "description": "1889年6月，梵高在法国圣雷米的精神病院中创作了这幅传世之作。那时的他，透过病房的铁窗凝望着夜空，将内心的狂喜与痛苦一并倾注在画布上。\n\n画面中，巨大的旋涡状星云主宰着整个天空，仿佛宇宙在剧烈地呼吸与律动。11颗星星和一轮明月散发出耀眼的光晕，让人感受到强烈的情感张力。左侧那棵直冲云霄的柏树，如同一道连接天地的火焰，既象征着死亡，也暗示着对永恒的渴望。\n\n远处宁静的村庄与动荡的天空形成鲜明对比，这正是梵高内心世界的写照——在混乱与不安中，寻找那一份难以触及的平静。",
-        "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/600px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg",
+        "image_url": "https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/starry_night.jpg",
         "tags": ["后印象派", "油画", "风景", "夜景"],
         "is_featured": True,
         "view_count": 0,
@@ -170,7 +170,7 @@ artworks = [
         "medium": "油画",
         "size": "89.9 × 94.1 cm",
         "description": "这是莫奈晚年最重要的系列作品之一。在诺曼底吉维尼的花园里，莫奈亲手挖掘了一个池塘，引入睡莲，搭建了那座著名的日式拱桥。从1896年直到去世，他持续描绘这片水面长达30年，留下了超过250幅睡莲画作。\n\n与早期作品不同，这一时期的莫奈已不再追求精确的形态，而是专注于光线在水面上的瞬息变化。画面中，睡莲、水草和天空的倒影融为一体，界限模糊，仿佛进入了一种冥想的状态。\n\n即便在视力几乎丧失的晚年，莫奈仍凭借记忆和感觉坚持创作。他曾说：'我的眼睛终于看见了真正的颜色。'",
-        "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg/800px-Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg",
+        "image_url": "https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/water_lilies.jpg",
         "tags": ["印象派", "油画", "风景", "自然"],
         "is_featured": False,
         "view_count": 0,
@@ -193,7 +193,7 @@ artworks = [
         "medium": "油画",
         "size": "44.5 × 39 cm",
         "description": "她被称为'北方的蒙娜丽莎'。与蒙娜丽莎不同，这位少女直视着观者，嘴唇微启，仿佛正要开口说话，又或者刚刚说完了什么。那颗硕大的珍珠耳环在黑暗背景中发出柔和的光，成为整幅画的视觉焦点。\n\n维米尔是17世纪荷兰最神秘的画家之一。他留下的画作不足40幅，关于他的生平几乎无从考证。这幅画的女主角是谁？至今成谜。有人说是他的女儿，有人说是主顾的女儿，也有人说完全是虚构人物。\n\n画中那颗珍珠其实可能根本不是珍珠——经过科学分析，它更像是玻璃或锡制的耳坠，但这并不影响它成为艺术史上最迷人的细节之一。",
-        "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Meisje_met_de_parel.jpg/800px-Meisje_met_de_parel.jpg",
+        "image_url": "https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/pearl_earring.jpg",
         "tags": ["荷兰黄金时代", "肖像画", "油画"],
         "is_featured": True,
         "view_count": 0,
@@ -216,7 +216,7 @@ artworks = [
         "medium": "油画",
         "size": "92.1 × 73 cm",
         "description": "1888年，梵高在法国南部的阿尔勒迎接好友高更的到来。为了装饰他们将要共同生活的'黄屋'，他创作了一系列向日葵。那个夏天，阳光炙热，向日葵盛开，梵高用他特有的旋转笔触和明亮的黄色，将对友谊和光明的渴望全部倾注于画布之上。\n\n梵高的黄色不只是一种颜色，更是一种情感。他在信中写道：'黄色代表阳光，代表爱，代表我对生活的全部热情。'这一系列作品在他去世后成为全球最知名的画作之一。\n\n1987年，其中一幅《向日葵》以3990万美元在伦敦拍卖，刷新了当时世界纪录，让全世界再次震惊于这位生前贫困潦倒的天才。",
-        "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Vincent_van_Gogh_-_Sunflowers_%281888%2C_National_Gallery_London%29.jpg/800px-Vincent_van_Gogh_-_Sunflowers_%281888%2C_National_Gallery_London%29.jpg",
+        "image_url": "https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/sunflowers.jpg",
         "tags": ["后印象派", "静物画", "油画"],
         "is_featured": False,
         "view_count": 0,

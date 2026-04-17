@@ -17,7 +17,7 @@ export default function Scan() {
     artist: '文森特·梵高',
     year: '1889年',
     confidence: 98,
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/400px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg',
+    image: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/starry_night.jpg',
   }
 
   // 拍照

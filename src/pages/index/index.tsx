@@ -82,24 +82,24 @@ export default function Index() {
       title: '星夜',
       artist_name: '文森特·梵高',
       museum_name: '纽约现代艺术博物馆',
-      image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/600px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg',
+      image_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/starry_night.jpg',
       is_featured: true,
     })
     setArtists([
-      { _id: 'artist_001', name: '达芬奇', avatar_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/200px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg' },
-      { _id: 'artist_002', name: '梵高', avatar_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/200px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg' },
-      { _id: 'artist_003', name: '莫奈', avatar_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg/200px-Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg' },
+      { _id: 'artist_001', name: '达芬奇', avatar_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/mona_lisa.jpg' },
+      { _id: 'artist_002', name: '梵高', avatar_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/starry_night.jpg' },
+      { _id: 'artist_003', name: '莫奈', avatar_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/water_lilies.jpg' },
     ])
     setMuseums([
-      { _id: 'museum_001', name: '卢浮宫', city: '巴黎', cover_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Louvre_Museum_Wikimedia_Commons.jpg/400px-Louvre_Museum_Wikimedia_Commons.jpg' },
-      { _id: 'museum_002', name: '大英博物馆', city: '伦敦', cover_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/British_Museum_from_NE_2.JPG/400px-British_Museum_from_NE_2.JPG' },
-      { _id: 'museum_003', name: '故宫博物院', city: '北京', cover_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Beijing_China_Forbidden-City-01.jpg/400px-Beijing_China_Forbidden-City-01.jpg' },
+      { _id: 'museum_001', name: '卢浮宫', city: '巴黎', cover_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/louvre.jpg' },
+      { _id: 'museum_002', name: '大英博物馆', city: '伦敦', cover_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/british_museum.jpg' },
+      { _id: 'museum_003', name: '故宫博物院', city: '北京', cover_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/forbidden_city.jpg' },
     ])
     setRecentArtworks([
-      { _id: 'artwork_001', title: '蒙娜丽莎', artist_name: '达芬奇', museum_name: '卢浮宫', image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/300px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg', is_featured: true },
-      { _id: 'artwork_002', title: '星夜', artist_name: '梵高', museum_name: '纽约现代艺术博物馆', image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/300px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg', is_featured: true },
-      { _id: 'artwork_003', title: '睡莲', artist_name: '莫奈', museum_name: '卢浮宫', image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg/300px-Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg', is_featured: false },
-      { _id: 'artwork_004', title: '戴珍珠耳环的少女', artist_name: '维米尔', museum_name: '大英博物馆', image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Meisje_met_de_parel.jpg/300px-Meisje_met_de_parel.jpg', is_featured: true },
+      { _id: 'artwork_001', title: '蒙娜丽莎', artist_name: '达芬奇', museum_name: '卢浮宫', image_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/mona_lisa.jpg', is_featured: true },
+      { _id: 'artwork_002', title: '星夜', artist_name: '梵高', museum_name: '纽约现代艺术博物馆', image_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/starry_night.jpg', is_featured: true },
+      { _id: 'artwork_003', title: '睡莲', artist_name: '莫奈', museum_name: '卢浮宫', image_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/water_lilies.jpg', is_featured: false },
+      { _id: 'artwork_004', title: '戴珍珠耳环的少女', artist_name: '维米尔', museum_name: '大英博物馆', image_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/pearl_earring.jpg', is_featured: true },
     ])
   }
 

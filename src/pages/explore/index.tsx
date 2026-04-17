@@ -26,15 +26,15 @@ interface Artist {
 
 // 备用静态数据
 const fallbackMuseums: Museum[] = [
-  { _id: 'museum_001', name: '卢浮宫', name_en: 'Louvre Museum', city: '巴黎', country: '法国', cover_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Louvre_Museum_Wikimedia_Commons.jpg/400px-Louvre_Museum_Wikimedia_Commons.jpg', artwork_count: 5 },
-  { _id: 'museum_002', name: '大英博物馆', name_en: 'British Museum', city: '伦敦', country: '英国', cover_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/British_Museum_from_NE_2.JPG/400px-British_Museum_from_NE_2.JPG', artwork_count: 3 },
-  { _id: 'museum_003', name: '故宫博物院', name_en: 'The Palace Museum', city: '北京', country: '中国', cover_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Beijing_China_Forbidden-City-01.jpg/400px-Beijing_China_Forbidden-City-01.jpg', artwork_count: 3 },
+  { _id: 'museum_001', name: '卢浮宫', name_en: 'Louvre Museum', city: '巴黎', country: '法国', cover_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/louvre.jpg', artwork_count: 5 },
+  { _id: 'museum_002', name: '大英博物馆', name_en: 'British Museum', city: '伦敦', country: '英国', cover_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/british_museum.jpg', artwork_count: 3 },
+  { _id: 'museum_003', name: '故宫博物院', name_en: 'The Palace Museum', city: '北京', country: '中国', cover_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/forbidden_city.jpg', artwork_count: 3 },
 ]
 
 const fallbackArtists: Artist[] = [
-  { _id: 'artist_001', name: '列奥纳多·达芬奇', name_en: 'Leonardo da Vinci', style: '文艺复兴', birth_year: 1452, death_year: 1519, avatar_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/200px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg', artwork_count: 3 },
-  { _id: 'artist_002', name: '文森特·梵高', name_en: 'Vincent van Gogh', style: '后印象派', birth_year: 1853, death_year: 1890, avatar_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/200px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg', artwork_count: 2 },
-  { _id: 'artist_003', name: '克劳德·莫奈', name_en: 'Claude Monet', style: '印象派', birth_year: 1840, death_year: 1926, avatar_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg/200px-Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg', artwork_count: 2 },
+  { _id: 'artist_001', name: '列奥纳多·达芬奇', name_en: 'Leonardo da Vinci', style: '文艺复兴', birth_year: 1452, death_year: 1519, avatar_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/mona_lisa.jpg', artwork_count: 3 },
+  { _id: 'artist_002', name: '文森特·梵高', name_en: 'Vincent van Gogh', style: '后印象派', birth_year: 1853, death_year: 1890, avatar_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/starry_night.jpg', artwork_count: 2 },
+  { _id: 'artist_003', name: '克劳德·莫奈', name_en: 'Claude Monet', style: '印象派', birth_year: 1840, death_year: 1926, avatar_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/water_lilies.jpg', artwork_count: 2 },
 ]
 
 export default function Explore() {

@@ -11,7 +11,7 @@ const courses = [
     desc: '从达芬奇到米开朗基罗，探索文艺复兴的艺术世界',
     count: 12,
     level: '入门',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/200px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg',
+    image: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/mona_lisa.jpg',
     tag: '热门',
   },
   {
@@ -20,7 +20,7 @@ const courses = [
     desc: '跟随莫奈和雷诺阿，感受印象派捕捉光影的独特魅力',
     count: 10,
     level: '进阶',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg/200px-Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg',
+    image: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/water_lilies.jpg',
     tag: '新课',
   },
   {
@@ -29,7 +29,7 @@ const courses = [
     desc: '深入了解梵高充满情感张力的艺术创作与人生故事',
     count: 8,
     level: '入门',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/200px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg',
+    image: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/starry_night.jpg',
     tag: '',
   },
   {
@@ -38,7 +38,7 @@ const courses = [
     desc: '从故宫珍藏出发，领略中国传统绘画的意境之美',
     count: 15,
     level: '入门',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Meisje_met_de_parel.jpg/200px-Meisje_met_de_parel.jpg',
+    image: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/pearl_earring.jpg',
     tag: '',
   },
 ]
