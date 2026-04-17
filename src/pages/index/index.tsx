@@ -26,7 +26,6 @@ interface Museum {
 }
 
 export default function Index() {
-  const [featuredArtwork, setFeaturedArtwork] = useState<Artwork | null>(null)
   const [artists, setArtists] = useState<Artist[]>([])
   const [museums, setMuseums] = useState<Museum[]>([])
   const [recentArtworks, setRecentArtworks] = useState<Artwork[]>([])
@@ -59,9 +58,6 @@ export default function Index() {
         .get()
       const museumsData = museumsRes.data as Museum[]
 
-      // 设置今日推荐
-      const featured = artworks.find(a => a.is_featured) || artworks[0]
-      setFeaturedArtwork(featured || null)
       setRecentArtworks(artworks.slice(0, 4))
       setArtists(artistsData)
       setMuseums(museumsData)
@@ -77,14 +73,6 @@ export default function Index() {
 
   // 备用静态数据（云数据库不可用时显示）
   const loadFallbackData = () => {
-    setFeaturedArtwork({
-      _id: 'artwork_002',
-      title: '星夜',
-      artist_name: '文森特·梵高',
-      museum_name: '纽约现代艺术博物馆',
-      image_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/starry_night.jpg',
-      is_featured: true,
-    })
     setArtists([
       { _id: 'artist_001', name: '达芬奇', avatar_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/mona_lisa.jpg' },
       { _id: 'artist_002', name: '梵高', avatar_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/starry_night.jpg' },
@@ -134,22 +122,6 @@ export default function Index() {
           <Text className='search-placeholder'>搜索画作、艺术家...</Text>
         </View>
       </View>
-
-      {/* 今日推荐 */}
-      {featuredArtwork && (
-        <View className='section'>
-          <View className='section-title-row'>
-            <Text className='section-title'>今日推荐</Text>
-          </View>
-          <View className='featured-card' onClick={() => goToArtwork(featuredArtwork._id)}>
-            <Image className='featured-image' src={featuredArtwork.image_url} mode='aspectFit' />
-            <View className='featured-overlay'>
-              <Text className='featured-title'>{featuredArtwork.title}</Text>
-              <Text className='featured-artist'>{featuredArtwork.artist_name} · {featuredArtwork.museum_name}</Text>
-            </View>
-          </View>
-        </View>
-      )}
 
       {/* 热门艺术家 */}
       {artists.length > 0 && (
