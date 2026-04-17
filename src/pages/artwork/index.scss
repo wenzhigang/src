@@ -106,13 +106,35 @@ $white: #FFFFFF;
   font-weight: 500;
 }
 
+// 标题行
+.title-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
 // 标题
 .artwork-title {
-  display: block;
+  flex: 1;
   font-size: 24px;
   font-weight: bold;
   color: $text-main;
-  margin-bottom: 4px;
+}
+
+// 标题行收藏按钮
+.inline-favorite-btn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &.loading {
+    opacity: 0.6;
+  }
 }
 
 .artwork-title-en {
@@ -414,4 +436,19 @@ $white: #FFFFFF;
   color: #C9A84C;
   font-size: 40rpx;
   line-height: 1;
+}
+
+// 全屏缩放区域
+.movable-area {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.movable-view {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

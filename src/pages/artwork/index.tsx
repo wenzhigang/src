@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView } from '@tarojs/components'
+import { View, Text, Image, ScrollView, MovableArea, MovableView } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro from '@tarojs/taro'
 import './index.scss'
@@ -180,15 +180,29 @@ export default function ArtworkDetail() {
     )
   }
 
-  // 全屏模式：纯净欣赏，点击退出
+  // 全屏模式：支持双指缩放
   if (isFullscreen) {
     return (
-      <View className='fullscreen-page' onClick={exitFullscreen}>
-        <Image
-          className='fullscreen-image'
-          src={artwork.image_url}
-          mode='aspectFit'
-        />
+      <View className='fullscreen-page'>
+        <MovableArea className='movable-area' scale>
+          <MovableView
+            className='movable-view'
+            direction='all'
+            scale
+            scaleMin={1}
+            scaleMax={4}
+            scaleValue={1}
+            damping={50}
+            friction={2}
+            onClick={exitFullscreen}
+          >
+            <Image
+              className='fullscreen-image'
+              src={artwork.image_url}
+              mode='aspectFit'
+            />
+          </MovableView>
+        </MovableArea>
       </View>
     )
   }
