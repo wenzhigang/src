@@ -1,30 +1,52 @@
 import { View, Text, Image, ScrollView } from '@tarojs/components'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Taro from '@tarojs/taro'
 import './index.scss'
 
-// 模拟画作数据（后续从API获取）
-const artworkData = {
-  id: '001',
+interface Annotation {
+  x: number
+  y: number
+  title: string
+  desc: string
+}
+
+interface Artwork {
+  _id: string
+  title: string
+  title_en: string
+  artist_id: string
+  artist_name: string
+  museum_id: string
+  museum_name: string
+  year: string
+  style: string
+  medium: string
+  size: string
+  description: string
+  image_url: string
+  tags: string[]
+  is_featured: boolean
+  annotations: Annotation[]
+  isAIGenerated?: boolean
+}
+
+// 备用数据
+const fallbackArtwork: Artwork = {
+  _id: 'artwork_002',
   title: '星夜',
-  titleEn: 'The Starry Night',
-  artist: '文森特·梵高',
-  artistId: '002',
+  title_en: 'The Starry Night',
+  artist_id: 'artist_002',
+  artist_name: '文森特·梵高',
+  museum_id: 'museum_001',
+  museum_name: '纽约现代艺术博物馆',
   year: '1889年',
   style: '后印象派',
   medium: '油画',
   size: '73.7 × 92.1 cm',
-  museum: '纽约现代艺术博物馆',
-  image: 'https://images.metmuseum.org/CRDImages/ep/original/DT1567.jpg',
-  isAIGenerated: false,
-  description: `1889年6月，梵高在法国圣雷米的精神病院中创作了这幅传世之作。那时的他，透过病房的铁窗凝望着夜空，将内心的狂喜与痛苦一并倾注在画布上。
-
-画面中，巨大的旋涡状星云主宰着整个天空，仿佛宇宙在剧烈地呼吸与律动。11颗星星和一轮明月散发出耀眼的光晕，让人感受到强烈的情感张力。左侧那棵直冲云霄的柏树，如同一道连接天地的火焰，既象征着死亡，也暗示着对永恒的渴望。
-
-远处宁静的村庄与动荡的天空形成鲜明对比，这正是梵高内心世界的写照——在混乱与不安中，寻找那一份难以触及的平静。
-
-有趣的是，梵高在写给弟弟提奥的信中曾说，他在夜晚感受到比白天更强烈的生命力。这幅画，正是那些不眠之夜里，他与宇宙对话的珍贵记录。`,
+  description: `1889年6月，梵高在法国圣雷米的精神病院中创作了这幅传世之作。那时的他，透过病房的铁窗凝望着夜空，将内心的狂喜与痛苦一并倾注在画布上。\n\n画面中，巨大的旋涡状星云主宰着整个天空，仿佛宇宙在剧烈地呼吸与律动。11颗星星和一轮明月散发出耀眼的光晕，让人感受到强烈的情感张力。\n\n远处宁静的村庄与动荡的天空形成鲜明对比，这正是梵高内心世界的写照——在混乱与不安中，寻找那一份难以触及的平静。`,
+  image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/600px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg',
   tags: ['后印象派', '油画', '风景', '夜景'],
+  is_featured: true,
   annotations: [
     { x: 15, y: 20, title: '旋涡星云', desc: '梵高用夸张的旋涡笔触表现星云，充满动感与能量' },
     { x: 75, y: 15, title: '月亮', desc: '明亮的月亮散发出强烈光晕，是画面的视觉焦点之一' },
@@ -34,12 +56,33 @@ const artworkData = {
 }
 
 export default function ArtworkDetail() {
+  const [artwork, setArtwork] = useState<Artwork | null>(null)
+  const [loading, setLoading] = useState(true)
   const [isFavorited, setIsFavorited] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [activeAnnotation, setActiveAnnotation] = useState<number | null>(null)
   const [showFullDesc, setShowFullDesc] = useState(false)
 
-  // 收藏切换
+  useEffect(() => {
+    const params = Taro.getCurrentInstance()?.router?.params
+    const id = params?.id || 'artwork_002'
+    loadArtwork(id)
+  }, [])
+
+  const loadArtwork = async (id: string) => {
+    try {
+      const db = Taro.cloud.database()
+      const res = await db.collection('artworks').doc(id).get()
+      setArtwork(res.data as Artwork)
+    } catch (err) {
+      console.error('画作数据加载失败，使用备用数据：', err)
+      // 根据ID尝试匹配备用数据
+      setArtwork(fallbackArtwork)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const toggleFavorite = () => {
     setIsFavorited(!isFavorited)
     Taro.showToast({
@@ -49,7 +92,6 @@ export default function ArtworkDetail() {
     })
   }
 
-  // 语音播放切换（模拟）
   const toggleAudio = () => {
     setIsPlaying(!isPlaying)
     if (!isPlaying) {
@@ -57,9 +99,28 @@ export default function ArtworkDetail() {
     }
   }
 
-  // 点击标注
   const handleAnnotation = (index: number) => {
     setActiveAnnotation(activeAnnotation === index ? null : index)
+  }
+
+  if (loading) {
+    return (
+      <View className='artwork-detail'>
+        <View className='loading-overlay'>
+          <Text className='loading-text'>加载中...</Text>
+        </View>
+      </View>
+    )
+  }
+
+  if (!artwork) {
+    return (
+      <View className='artwork-detail'>
+        <View className='loading-overlay'>
+          <Text className='loading-text'>画作不存在</Text>
+        </View>
+      </View>
+    )
   }
 
   return (
@@ -70,12 +131,11 @@ export default function ArtworkDetail() {
         <View className='image-container'>
           <Image
             className='artwork-image'
-            src={artworkData.image}
+            src={artwork.image_url}
             mode='aspectFit'
           />
-
-          {/* 画作细节标注点 */}
-          {artworkData.annotations.map((ann, index) => (
+          {/* 标注点 */}
+          {artwork.annotations && artwork.annotations.map((ann, index) => (
             <View
               key={index}
               className={`annotation-dot ${activeAnnotation === index ? 'active' : ''}`}
@@ -85,72 +145,71 @@ export default function ArtworkDetail() {
               <Text className='dot-text'>+</Text>
             </View>
           ))}
-
           {/* 标注弹窗 */}
-          {activeAnnotation !== null && (
+          {activeAnnotation !== null && artwork.annotations && (
             <View className='annotation-popup'>
-              <Text className='popup-title'>{artworkData.annotations[activeAnnotation].title}</Text>
-              <Text className='popup-desc'>{artworkData.annotations[activeAnnotation].desc}</Text>
+              <Text className='popup-title'>{artwork.annotations[activeAnnotation].title}</Text>
+              <Text className='popup-desc'>{artwork.annotations[activeAnnotation].desc}</Text>
             </View>
           )}
         </View>
 
-        {/* 画作基本信息 */}
+        {/* 画作信息 */}
         <View className='info-section'>
 
           {/* AI生成标识 */}
-          {artworkData.isAIGenerated && (
+          {artwork.isAIGenerated && (
             <View className='ai-badge'>
               <Text className='ai-text'>⚡ AI生成内容，仅供参考</Text>
             </View>
           )}
 
-          {/* 标题 */}
-          <Text className='artwork-title'>{artworkData.title}</Text>
-          <Text className='artwork-title-en'>{artworkData.titleEn}</Text>
+          <Text className='artwork-title'>{artwork.title}</Text>
+          <Text className='artwork-title-en'>{artwork.title_en}</Text>
 
-          {/* 基本信息行 */}
           <View className='meta-row'>
             <View className='meta-item'>
               <Text className='meta-label'>艺术家</Text>
-              <Text className='meta-value artist-link'>{artworkData.artist}</Text>
+              <Text className='meta-value artist-link'>{artwork.artist_name}</Text>
             </View>
             <View className='meta-item'>
               <Text className='meta-label'>年代</Text>
-              <Text className='meta-value'>{artworkData.year}</Text>
+              <Text className='meta-value'>{artwork.year}</Text>
             </View>
           </View>
           <View className='meta-row'>
             <View className='meta-item'>
               <Text className='meta-label'>风格</Text>
-              <Text className='meta-value'>{artworkData.style}</Text>
+              <Text className='meta-value'>{artwork.style}</Text>
             </View>
             <View className='meta-item'>
               <Text className='meta-label'>媒介</Text>
-              <Text className='meta-value'>{artworkData.medium}</Text>
+              <Text className='meta-value'>{artwork.medium}</Text>
             </View>
           </View>
           <View className='meta-row'>
             <View className='meta-item full-width'>
               <Text className='meta-label'>收藏于</Text>
-              <Text className='meta-value'>{artworkData.museum}</Text>
+              <Text className='meta-value'>{artwork.museum_name}</Text>
             </View>
           </View>
 
           {/* 标签 */}
-          <View className='tags-row'>
-            {artworkData.tags.map(tag => (
-              <Text key={tag} className='tag'>{tag}</Text>
-            ))}
-          </View>
+          {artwork.tags && (
+            <View className='tags-row'>
+              {artwork.tags.map(tag => (
+                <Text key={tag} className='tag'>{tag}</Text>
+              ))}
+            </View>
+          )}
 
           {/* 讲解内容 */}
           <View className='description-section'>
             <Text className='section-title'>📖 画作故事</Text>
             <Text className='description'>
               {showFullDesc
-                ? artworkData.description
-                : artworkData.description.slice(0, 120) + '...'}
+                ? artwork.description
+                : artwork.description.slice(0, 120) + '...'}
             </Text>
             <Text
               className='read-more'
@@ -160,26 +219,24 @@ export default function ArtworkDetail() {
             </Text>
           </View>
 
-          {/* 前往艺术家页面 */}
+          {/* 艺术家链接 */}
           <View className='artist-link-row'>
-            <Text className='artist-link-text'>了解更多关于 {artworkData.artist} →</Text>
+            <Text className='artist-link-text'>了解更多关于 {artwork.artist_name} →</Text>
           </View>
 
         </View>
 
-        {/* 底部留白（为播放器留空间） */}
         <View className='bottom-space' />
-
       </ScrollView>
 
-      {/* 顶部操作栏（收藏按钮） */}
+      {/* 收藏按钮 */}
       <View className='top-actions'>
         <View className='favorite-btn' onClick={toggleFavorite}>
           <Text className='favorite-icon'>{isFavorited ? '❤️' : '🤍'}</Text>
         </View>
       </View>
 
-      {/* 底部语音播放器 */}
+      {/* 语音播放器 */}
       <View className='audio-player'>
         <Text className='audio-icon'>🎵</Text>
         <View className='progress-bar'>

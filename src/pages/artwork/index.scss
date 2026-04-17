@@ -223,6 +223,19 @@ $white: #FFFFFF;
   height: 80px;
 }
 
+// 加载状态
+.loading-overlay {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-text {
+  font-size: 15px;
+  color: rgba(255,255,255,0.6);
+}
+
 // 顶部收藏按钮
 .top-actions {
   position: fixed;
