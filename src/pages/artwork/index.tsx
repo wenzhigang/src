@@ -205,9 +205,6 @@ export default function ArtworkDetail() {
             src={artwork.image_url}
             mode='aspectFit'
           />
-          <View className='tap-hint'>
-            <Text className='tap-hint-text'>⊕</Text>
-          </View>
         </View>
 
         {/* 画作信息 */}
@@ -219,7 +216,15 @@ export default function ArtworkDetail() {
             </View>
           )}
 
-          <Text className='artwork-title'>{artwork.title}</Text>
+          <View className='title-row'>
+            <Text className='artwork-title'>{artwork.title}</Text>
+            <View
+              className={`inline-favorite-btn ${favoriteLoading ? 'loading' : ''}`}
+              onClick={toggleFavorite}
+            >
+              <Text className='favorite-icon'>{isFavorited ? '❤️' : '🤍'}</Text>
+            </View>
+          </View>
           <Text className='artwork-title-en'>{artwork.title_en}</Text>
 
           <View className='meta-row'>
@@ -280,15 +285,7 @@ export default function ArtworkDetail() {
         <View className='bottom-space' />
       </ScrollView>
 
-      {/* 收藏按钮 */}
-      <View className='top-actions'>
-        <View
-          className={`favorite-btn ${favoriteLoading ? 'loading' : ''}`}
-          onClick={toggleFavorite}
-        >
-          <Text className='favorite-icon'>{isFavorited ? '❤️' : '🤍'}</Text>
-        </View>
-      </View>
+
 
       {/* 语音播放器 */}
       <View className='audio-player'>
