@@ -148,7 +148,7 @@ export default function Profile() {
             </View>
             <View className='user-info'>
               <Text className='nickname'>
-                {userInfo?.openid ? '艺术爱好者' : '未登录'}
+                {userInfo && userInfo.openid ? '艺术爱好者' : '未登录'}
               </Text>
               <View className='membership-badge'>
                 <Text className='membership-text'>免费版</Text>

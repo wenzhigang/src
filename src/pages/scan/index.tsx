@@ -79,7 +79,7 @@ export default function Scan() {
 
   // 跳转到画作详情
   const goToDetail = () => {
-    if (result?.id) {
+    if (result && result.id) {
       Taro.navigateTo({ url: `/pages/artwork/index?id=${result.id}` })
     }
   }

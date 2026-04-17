@@ -66,8 +66,8 @@ export default function ArtworkDetail() {
   const [showFullDesc, setShowFullDesc] = useState(false)
 
   useEffect(() => {
-    const params = Taro.getCurrentInstance()?.router?.params
-    const id = params?.id || 'artwork_002'
+    const params = ((Taro.getCurrentInstance() || {}).router || {}).params
+    const id = params && params.id || 'artwork_002'
     loadArtwork(id)
   }, [])
 
