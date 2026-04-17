@@ -154,10 +154,22 @@ export default function ArtworkDetail() {
 
   const enterFullscreen = () => {
     setIsFullscreen(true)
+    Taro.hideNavigationBarLoading()
+    wx.hideHomeButton()
+    Taro.setNavigationBarColor({
+      frontColor: '#000000',
+      backgroundColor: '#000000',
+      animation: { duration: 0 }
+    })
   }
 
   const exitFullscreen = () => {
     setIsFullscreen(false)
+    Taro.setNavigationBarColor({
+      frontColor: '#ffffff',
+      backgroundColor: '#141414',
+      animation: { duration: 0 }
+    })
   }
 
   if (loading) {

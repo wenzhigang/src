@@ -111,13 +111,13 @@ $white: #FFFFFF;
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 8px;
   margin-bottom: 8px;
 }
 
 // 标题
 .artwork-title {
-  flex: 1;
   font-size: 24px;
   font-weight: bold;
   color: $text-main;
