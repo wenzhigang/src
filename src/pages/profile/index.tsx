@@ -1,19 +1,7 @@
-import { View, Text, Image } from '@tarojs/components'
-import { useState } from 'react'
-import Taro from '@tarojs/taro'
+import { View, Text, Image, Button } from '@tarojs/components'
+import { useState, useEffect } from 'react'
+import Taro, { useDidShow } from '@tarojs/taro'
 import './index.scss'
-
-// 模拟用户数据
-const mockUser = {
-  nickname: '艺术爱好者',
-  avatar: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/200px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg',
-  membership: 'free',
-  stats: {
-    favorites: 12,
-    viewed: 38,
-    badges: 3,
-  }
-}
 
 // 成就徽章数据
 const badges = [
@@ -25,59 +13,172 @@ const badges = [
   { id: '006', name: '收藏达人', desc: '收藏20幅画作', icon: '❤️', unlocked: false },
 ]
 
-// 收藏的画作（模拟数据）
-const favoritedArtworks = [
-  { id: '001', title: '星夜', artist: '梵高', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/200px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg' },
-  { id: '002', title: '蒙娜丽莎', artist: '达芬奇', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/200px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg' },
-  { id: '003', title: '睡莲', artist: '莫奈', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg/200px-Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg' },
-]
+interface UserInfo {
+  openid: string
+  nickname: string
+  avatarUrl: string
+  loginTime: number
+}
+
+interface FavoriteArtwork {
+  _id: string
+  artwork_id: string
+  title: string
+  artist_name: string
+  image_url: string
+}
 
 export default function Profile() {
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
   const [activeSection, setActiveSection] = useState<'favorites' | 'badges'>('favorites')
+  const [favorites, setFavorites] = useState<FavoriteArtwork[]>([])
+  const [loadingFavorites, setLoadingFavorites] = useState(false)
+  const [loginLoading, setLoginLoading] = useState(false)
 
-  const handleLogin = () => {
-    Taro.showToast({ title: '微信登录功能开发中', icon: 'none' })
+  useEffect(() => {
+    // 首次加载时读取登录信息
+    const stored = Taro.getStorageSync('userInfo')
+    if (stored && stored.openid) {
+      setUserInfo(stored)
+    }
+  }, [])
+
+  // 每次页面显示时都重新加载收藏列表（包括从详情页返回时）
+  useDidShow(() => {
+    const stored = Taro.getStorageSync('userInfo')
+    if (stored && stored.openid) {
+      setUserInfo(stored)
+      loadFavorites(stored.openid)
+    }
+  })
+
+  // 从云数据库加载收藏列表
+  const loadFavorites = async (openid: string) => {
+    setLoadingFavorites(true)
+    try {
+      const db = Taro.cloud.database()
+      const res = await db.collection('favorites')
+        .where({ openid })
+        .orderBy('created_at', 'desc')
+        .limit(20)
+        .get()
+      setFavorites(res.data as FavoriteArtwork[])
+    } catch (err) {
+      console.error('加载收藏失败：', err)
+    } finally {
+      setLoadingFavorites(false)
+    }
   }
 
-  const goToArtwork = (id: string) => {
-    Taro.navigateTo({ url: `/pages/artwork/index?id=${id}` })
+  // 微信授权登录（获取头像和昵称）
+  const handleGetUserProfile = async () => {
+    setLoginLoading(true)
+    try {
+      const profileRes = await Taro.getUserProfile({
+        desc: '用于展示您的个人信息',
+      })
+
+      const { nickName, avatarUrl } = profileRes.userInfo
+
+      const stored = Taro.getStorageSync('userInfo')
+      if (!stored || !stored.openid) {
+        Taro.showToast({ title: '请稍后再试', icon: 'none' })
+        return
+      }
+
+      const newUserInfo: UserInfo = {
+        openid: stored.openid,
+        nickname: nickName,
+        avatarUrl,
+        loginTime: stored.loginTime,
+      }
+      Taro.setStorageSync('userInfo', newUserInfo)
+      setUserInfo(newUserInfo)
+
+      const db = Taro.cloud.database()
+      await db.collection('users')
+        .where({ openid: stored.openid })
+        .update({
+          data: {
+            nickname: nickName,
+            avatar_url: avatarUrl,
+            last_login: db.serverDate(),
+          }
+        })
+
+      Taro.showToast({ title: '登录成功', icon: 'success' })
+      loadFavorites(stored.openid)
+    } catch (err) {
+      console.error('获取用户信息失败：', err)
+      Taro.showToast({ title: '取消登录', icon: 'none' })
+    } finally {
+      setLoginLoading(false)
+    }
+  }
+
+  const goToArtwork = (artworkId: string) => {
+    Taro.navigateTo({ url: `/pages/artwork/index?id=${artworkId}` })
   }
 
   const handleFeedback = () => {
     Taro.showToast({ title: '感谢您的反馈！', icon: 'success' })
   }
 
+  const isLoggedIn = userInfo && userInfo.openid && userInfo.nickname
+
   return (
     <View className='profile-page'>
 
       {/* 用户信息卡片 */}
       <View className='user-card'>
-        <Image className='avatar' src={mockUser.avatar} mode='aspectFill' />
-        <View className='user-info'>
-          <Text className='nickname'>{mockUser.nickname}</Text>
-          <View className='membership-badge'>
-            <Text className='membership-text'>免费版</Text>
-          </View>
-        </View>
-        <View className='login-btn' onClick={handleLogin}>
-          <Text className='login-text'>微信登录</Text>
-        </View>
+        {isLoggedIn ? (
+          <>
+            <Image className='avatar' src={userInfo!.avatarUrl} mode='aspectFill' />
+            <View className='user-info'>
+              <Text className='nickname'>{userInfo!.nickname}</Text>
+              <View className='membership-badge'>
+                <Text className='membership-text'>免费版</Text>
+              </View>
+            </View>
+          </>
+        ) : (
+          <>
+            <View className='avatar-placeholder'>
+              <Text className='avatar-placeholder-text'>画</Text>
+            </View>
+            <View className='user-info'>
+              <Text className='nickname'>
+                {userInfo?.openid ? '艺术爱好者' : '未登录'}
+              </Text>
+              <View className='membership-badge'>
+                <Text className='membership-text'>免费版</Text>
+              </View>
+            </View>
+            <Button
+              className='login-btn'
+              onClick={handleGetUserProfile}
+              loading={loginLoading}
+            >
+              <Text className='login-text'>微信登录</Text>
+            </Button>
+          </>
+        )}
       </View>
 
       {/* 数据统计 */}
       <View className='stats-row'>
         <View className='stat-item' onClick={() => setActiveSection('favorites')}>
-          <Text className='stat-number'>{mockUser.stats.favorites}</Text>
+          <Text className='stat-number'>{favorites.length}</Text>
           <Text className='stat-label'>收藏</Text>
         </View>
         <View className='stat-divider' />
         <View className='stat-item'>
-          <Text className='stat-number'>{mockUser.stats.viewed}</Text>
+          <Text className='stat-number'>0</Text>
           <Text className='stat-label'>已看</Text>
         </View>
         <View className='stat-divider' />
         <View className='stat-item' onClick={() => setActiveSection('badges')}>
-          <Text className='stat-number'>{mockUser.stats.badges}</Text>
+          <Text className='stat-number'>3</Text>
           <Text className='stat-label'>徽章</Text>
         </View>
       </View>
@@ -101,18 +202,22 @@ export default function Profile() {
       {/* 收藏列表 */}
       {activeSection === 'favorites' && (
         <View className='favorites-section'>
-          {favoritedArtworks.length > 0 ? (
+          {loadingFavorites ? (
+            <View className='empty-state'>
+              <Text className='empty-text'>加载中...</Text>
+            </View>
+          ) : favorites.length > 0 ? (
             <View className='artwork-grid'>
-              {favoritedArtworks.map(artwork => (
+              {favorites.map(item => (
                 <View
                   className='artwork-item'
-                  key={artwork.id}
-                  onClick={() => goToArtwork(artwork.id)}
+                  key={item._id}
+                  onClick={() => goToArtwork(item.artwork_id)}
                 >
-                  <Image className='artwork-img' src={artwork.image} mode='aspectFill' />
+                  <Image className='artwork-img' src={item.image_url} mode='aspectFill' />
                   <View className='artwork-info'>
-                    <Text className='artwork-title'>{artwork.title}</Text>
-                    <Text className='artwork-artist'>{artwork.artist}</Text>
+                    <Text className='artwork-title'>{item.title}</Text>
+                    <Text className='artwork-artist'>{item.artist_name}</Text>
                   </View>
                 </View>
               ))}

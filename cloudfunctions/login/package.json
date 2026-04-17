@@ -1,14 +1,9 @@
-// 云函数：login
-// 作用：获取用户 openid（微信自动注入，无需用户授权）
-const cloud = require('wx-server-sdk')
-
-cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
-
-exports.main = async (event, context) => {
-  const wxContext = cloud.getWXContext()
-  return {
-    openid: wxContext.OPENID,
-    appid: wxContext.APPID,
-    unionid: wxContext.UNIONID,
+{
+  "name": "login",
+  "version": "1.0.0",
+  "description": "云函数：获取用户openid",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
   }
 }

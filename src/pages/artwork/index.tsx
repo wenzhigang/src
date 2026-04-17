@@ -59,6 +59,8 @@ export default function ArtworkDetail() {
   const [artwork, setArtwork] = useState<Artwork | null>(null)
   const [loading, setLoading] = useState(true)
   const [isFavorited, setIsFavorited] = useState(false)
+  const [favoriteDocId, setFavoriteDocId] = useState<string | null>(null)
+  const [favoriteLoading, setFavoriteLoading] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [activeAnnotation, setActiveAnnotation] = useState<number | null>(null)
   const [showFullDesc, setShowFullDesc] = useState(false)
@@ -73,23 +75,90 @@ export default function ArtworkDetail() {
     try {
       const db = Taro.cloud.database()
       const res = await db.collection('artworks').doc(id).get()
-      setArtwork(res.data as Artwork)
+      const artworkData = res.data as Artwork
+      setArtwork(artworkData)
+      // 画作加载完成后，检查收藏状态
+      checkFavoriteStatus(id)
     } catch (err) {
       console.error('画作数据加载失败，使用备用数据：', err)
-      // 根据ID尝试匹配备用数据
       setArtwork(fallbackArtwork)
+      checkFavoriteStatus(fallbackArtwork._id)
     } finally {
       setLoading(false)
     }
   }
 
-  const toggleFavorite = () => {
-    setIsFavorited(!isFavorited)
-    Taro.showToast({
-      title: isFavorited ? '已取消收藏' : '收藏成功',
-      icon: 'success',
-      duration: 1500,
-    })
+  // 检查当前画作是否已被用户收藏
+  const checkFavoriteStatus = async (artworkId: string) => {
+    try {
+      const userInfo = Taro.getStorageSync('userInfo')
+      if (!userInfo || !userInfo.openid) return
+
+      const db = Taro.cloud.database()
+      const res = await db.collection('favorites')
+        .where({
+          openid: userInfo.openid,
+          artwork_id: artworkId,
+        })
+        .get()
+
+      if (res.data.length > 0) {
+        setIsFavorited(true)
+        setFavoriteDocId(res.data[0]._id)
+      } else {
+        setIsFavorited(false)
+        setFavoriteDocId(null)
+      }
+    } catch (err) {
+      console.error('检查收藏状态失败：', err)
+    }
+  }
+
+  // 收藏 / 取消收藏，写入云数据库
+  const toggleFavorite = async () => {
+    if (favoriteLoading) return
+
+    // 未登录提示
+    const userInfo = Taro.getStorageSync('userInfo')
+    if (!userInfo || !userInfo.openid) {
+      Taro.showToast({ title: '请先登录', icon: 'none' })
+      return
+    }
+
+    if (!artwork) return
+
+    setFavoriteLoading(true)
+    const db = Taro.cloud.database()
+
+    try {
+      if (isFavorited && favoriteDocId) {
+        // 已收藏 → 取消收藏：删除云端记录
+        await db.collection('favorites').doc(favoriteDocId).remove()
+        setIsFavorited(false)
+        setFavoriteDocId(null)
+        Taro.showToast({ title: '已取消收藏', icon: 'none', duration: 1500 })
+      } else {
+        // 未收藏 → 添加收藏：写入云端记录
+        const addRes = await db.collection('favorites').add({
+          data: {
+            openid: userInfo.openid,
+            artwork_id: artwork._id,
+            title: artwork.title,
+            artist_name: artwork.artist_name,
+            image_url: artwork.image_url,
+            created_at: db.serverDate(),
+          }
+        })
+        setIsFavorited(true)
+        setFavoriteDocId(addRes._id as string)
+        Taro.showToast({ title: '收藏成功', icon: 'success', duration: 1500 })
+      }
+    } catch (err) {
+      console.error('收藏操作失败：', err)
+      Taro.showToast({ title: '操作失败，请重试', icon: 'none' })
+    } finally {
+      setFavoriteLoading(false)
+    }
   }
 
   const toggleAudio = () => {
@@ -231,7 +300,10 @@ export default function ArtworkDetail() {
 
       {/* 收藏按钮 */}
       <View className='top-actions'>
-        <View className='favorite-btn' onClick={toggleFavorite}>
+        <View
+          className={`favorite-btn ${favoriteLoading ? 'loading' : ''}`}
+          onClick={toggleFavorite}
+        >
           <Text className='favorite-icon'>{isFavorited ? '❤️' : '🤍'}</Text>
         </View>
       </View>
