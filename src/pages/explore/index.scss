@@ -188,3 +188,15 @@ $white: #FFFFFF;
   margin-top: 6px;
   font-weight: 500;
 }
+
+// 加载状态
+.loading-row {
+  padding: 40px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.loading-text {
+  font-size: 14px;
+  color: $text-sub;
+}
