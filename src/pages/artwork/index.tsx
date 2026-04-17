@@ -220,7 +220,7 @@ export default function ArtworkDetail() {
             style={{ left: `${ann.x}%`, top: `${ann.y}%` }}
             onClick={() => handleAnnotation(index)}
           >
-            <Text className='dot-text'>+</Text>
+            <Text className='dot-text'>●</Text>
           </View>
         ))}
         {/* 标注弹窗 */}
@@ -236,12 +236,14 @@ export default function ArtworkDetail() {
         </View>
         {/* 横竖屏切换按钮 */}
         <View className='orientation-btn' onClick={toggleOrientation}>
-          <Text className='orientation-text'>{isLandscape ? '⇅' : '⇄'}</Text>
+          <Text className='orientation-text'>⟳</Text>
         </View>
-        {/* 提示 */}
-        <View className='fullscreen-hint'>
-          <Text className='fullscreen-hint-text'>点击 + 查看画作细节</Text>
-        </View>
+        {/* 提示 - 横屏时隐藏 */}
+        {!isLandscape && (
+          <View className='fullscreen-hint'>
+            <Text className='fullscreen-hint-text'>点击标记点查看画作细节</Text>
+          </View>
+        )}
       </View>
     )
   }
