@@ -142,7 +142,7 @@ export default function Index() {
             <Text className='section-title'>今日推荐</Text>
           </View>
           <View className='featured-card' onClick={() => goToArtwork(featuredArtwork._id)}>
-            <Image className='featured-image' src={featuredArtwork.image_url} mode='aspectFill' />
+            <Image className='featured-image' src={featuredArtwork.image_url} mode='aspectFit' />
             <View className='featured-overlay'>
               <Text className='featured-title'>{featuredArtwork.title}</Text>
               <Text className='featured-artist'>{featuredArtwork.artist_name} · {featuredArtwork.museum_name}</Text>

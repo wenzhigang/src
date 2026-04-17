@@ -3,4 +3,5 @@ export default definePageConfig({
   navigationBarBackgroundColor: '#141414',
   navigationBarTextStyle: 'white',
   backgroundColor: '#141414',
+  pageOrientation: 'auto',
 })

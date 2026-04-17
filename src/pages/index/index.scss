@@ -74,13 +74,13 @@ $white: #FFFFFF;
 .featured-card {
   position: relative;
   width: 100%;
-  height: 260px;
+  height: 320px;
   border-radius: 12px;
   overflow: hidden;
+  background-color: #1a1a1a;
 }
 
 .featured-image {
-  object-position: center 20%;
   width: 100%;
   height: 100%;
 }

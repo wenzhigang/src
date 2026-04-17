@@ -372,3 +372,46 @@ $white: #FFFFFF;
   border-radius: 20rpx;
 }
 
+
+// 点击放大提示 - 右下角金色圆形图标
+.tap-hint {
+  position: absolute;
+  bottom: 24rpx;
+  right: 24rpx;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 32rpx;
+  background-color: rgba(201,168,76,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tap-hint-text {
+  font-size: 36rpx;
+  color: #FFFFFF;
+  line-height: 1;
+  font-weight: 300;
+}
+
+// 横竖屏切换按钮 - 右下角
+.orientation-btn {
+  position: fixed;
+  bottom: 120rpx;
+  right: 32rpx;
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 40rpx;
+  background-color: rgba(0,0,0,0.6);
+  border: 1px solid rgba(201,168,76,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 210;
+}
+
+.orientation-text {
+  color: #C9A84C;
+  font-size: 40rpx;
+  line-height: 1;
+}

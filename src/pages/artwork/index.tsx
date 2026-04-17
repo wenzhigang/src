@@ -64,6 +64,7 @@ export default function ArtworkDetail() {
   const [activeAnnotation, setActiveAnnotation] = useState<number | null>(null)
   const [showFullDesc, setShowFullDesc] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [isLandscape, setIsLandscape] = useState(false)
 
   useEffect(() => {
     const params = ((Taro.getCurrentInstance() || {}).router || {}).params
@@ -165,6 +166,21 @@ export default function ArtworkDetail() {
   const exitFullscreen = () => {
     setIsFullscreen(false)
     setActiveAnnotation(null)
+    // 退出全屏时恢复竖屏
+    if (isLandscape) {
+      Taro.setPageOrientation({ pageOrientation: 'portrait' })
+      setIsLandscape(false)
+    }
+  }
+
+  const toggleOrientation = () => {
+    if (isLandscape) {
+      Taro.setPageOrientation({ pageOrientation: 'portrait' })
+      setIsLandscape(false)
+    } else {
+      Taro.setPageOrientation({ pageOrientation: 'landscape' })
+      setIsLandscape(true)
+    }
   }
 
   if (loading) {
@@ -218,6 +234,10 @@ export default function ArtworkDetail() {
         <View className='fullscreen-close' onClick={exitFullscreen}>
           <Text className='fullscreen-close-text'>✕</Text>
         </View>
+        {/* 横竖屏切换按钮 */}
+        <View className='orientation-btn' onClick={toggleOrientation}>
+          <Text className='orientation-text'>{isLandscape ? '⇅' : '⇄'}</Text>
+        </View>
         {/* 提示 */}
         <View className='fullscreen-hint'>
           <Text className='fullscreen-hint-text'>点击 + 查看画作细节</Text>
@@ -239,7 +259,7 @@ export default function ArtworkDetail() {
             mode='aspectFit'
           />
           <View className='tap-hint'>
-            <Text className='tap-hint-text'>点击查看细节 ⊕</Text>
+            <Text className='tap-hint-text'>⊕</Text>
           </View>
         </View>
 
