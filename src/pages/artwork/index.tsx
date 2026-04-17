@@ -180,7 +180,7 @@ export default function ArtworkDetail() {
     )
   }
 
-  // 全屏模式：整页替换，纯净欣赏
+  // 全屏模式：纯净欣赏，点击退出
   if (isFullscreen) {
     return (
       <View className='fullscreen-page' onClick={exitFullscreen}>
@@ -189,14 +189,6 @@ export default function ArtworkDetail() {
           src={artwork.image_url}
           mode='aspectFit'
         />
-        {/* 关闭全屏 - 右上角 */}
-        <View className='fullscreen-close' onClick={exitFullscreen}>
-          <Text className='fullscreen-close-text'>✕</Text>
-        </View>
-        {/* 提示文字 */}
-        <View className='fullscreen-hint'>
-          <Text className='fullscreen-hint-text'>旋转手机可横屏观看 · 点击任意处退出</Text>
-        </View>
       </View>
     )
   }
