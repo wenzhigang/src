@@ -1,5 +1,3 @@
-// 画说首页样式
-// 颜色变量
 $primary: #1A3C34;
 $gold: #C9A84C;
 $bg: #F8F5F0;
@@ -72,16 +70,17 @@ $white: #FFFFFF;
   color: $primary;
 }
 
-// 今日推荐大图
+// 今日推荐大图 - 加高并显示顶部
 .featured-card {
   position: relative;
   width: 100%;
-  height: 200px;
+  height: 260px;
   border-radius: 12px;
   overflow: hidden;
 }
 
 .featured-image {
+  object-position: center 20%;
   width: 100%;
   height: 100%;
 }
@@ -91,13 +90,13 @@ $white: #FFFFFF;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 12px;
-  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+  padding: 16px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.75));
 }
 
 .featured-title {
   display: block;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
   color: $white;
 }
@@ -182,15 +181,18 @@ $white: #FFFFFF;
   color: rgba(255,255,255,0.8);
 }
 
-// 最新收录两列网格
+// 最新收录双列网格
 .artwork-grid {
   display: flex;
+  flex-direction: row;
   flex-wrap: wrap;
-  gap: 10px;
+  margin: 0 -5px;
 }
 
 .artwork-card {
-  width: calc(50% - 5px);
+  width: 50%;
+  padding: 0 5px;
+  box-sizing: border-box;
   border-radius: 8px;
   overflow: hidden;
   background-color: $white;
@@ -199,7 +201,7 @@ $white: #FFFFFF;
 
 .artwork-image {
   width: 100%;
-  height: 160px;
+  height: 140px;
 }
 
 .artwork-info {
@@ -208,14 +210,14 @@ $white: #FFFFFF;
 
 .artwork-title {
   display: block;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: $text-main;
 }
 
 .artwork-artist {
   display: block;
-  font-size: 12px;
+  font-size: 11px;
   color: $text-sub;
   margin-top: 3px;
 }

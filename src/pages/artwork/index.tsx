@@ -30,7 +30,6 @@ interface Artwork {
   isAIGenerated?: boolean
 }
 
-// 备用数据
 const fallbackArtwork: Artwork = {
   _id: 'artwork_002',
   title: '星夜',
@@ -64,6 +63,7 @@ export default function ArtworkDetail() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [activeAnnotation, setActiveAnnotation] = useState<number | null>(null)
   const [showFullDesc, setShowFullDesc] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
   useEffect(() => {
     const params = ((Taro.getCurrentInstance() || {}).router || {}).params
@@ -77,7 +77,6 @@ export default function ArtworkDetail() {
       const res = await db.collection('artworks').doc(id).get()
       const artworkData = res.data as Artwork
       setArtwork(artworkData)
-      // 画作加载完成后，检查收藏状态
       checkFavoriteStatus(id)
     } catch (err) {
       console.error('画作数据加载失败，使用备用数据：', err)
@@ -88,20 +87,14 @@ export default function ArtworkDetail() {
     }
   }
 
-  // 检查当前画作是否已被用户收藏
   const checkFavoriteStatus = async (artworkId: string) => {
     try {
       const userInfo = Taro.getStorageSync('userInfo')
       if (!userInfo || !userInfo.openid) return
-
       const db = Taro.cloud.database()
       const res = await db.collection('favorites')
-        .where({
-          openid: userInfo.openid,
-          artwork_id: artworkId,
-        })
+        .where({ openid: userInfo.openid, artwork_id: artworkId })
         .get()
-
       if (res.data.length > 0) {
         setIsFavorited(true)
         setFavoriteDocId(res.data[0]._id)
@@ -114,31 +107,23 @@ export default function ArtworkDetail() {
     }
   }
 
-  // 收藏 / 取消收藏，写入云数据库
   const toggleFavorite = async () => {
     if (favoriteLoading) return
-
-    // 未登录提示
     const userInfo = Taro.getStorageSync('userInfo')
     if (!userInfo || !userInfo.openid) {
       Taro.showToast({ title: '请先登录', icon: 'none' })
       return
     }
-
     if (!artwork) return
-
     setFavoriteLoading(true)
     const db = Taro.cloud.database()
-
     try {
       if (isFavorited && favoriteDocId) {
-        // 已收藏 → 取消收藏：删除云端记录
         await db.collection('favorites').doc(favoriteDocId).remove()
         setIsFavorited(false)
         setFavoriteDocId(null)
         Taro.showToast({ title: '已取消收藏', icon: 'none', duration: 1500 })
       } else {
-        // 未收藏 → 添加收藏：写入云端记录
         const addRes = await db.collection('favorites').add({
           data: {
             openid: userInfo.openid,
@@ -172,6 +157,16 @@ export default function ArtworkDetail() {
     setActiveAnnotation(activeAnnotation === index ? null : index)
   }
 
+  const enterFullscreen = () => {
+    setIsFullscreen(true)
+    setActiveAnnotation(null)
+  }
+
+  const exitFullscreen = () => {
+    setIsFullscreen(false)
+    setActiveAnnotation(null)
+  }
+
   if (loading) {
     return (
       <View className='artwork-detail'>
@@ -192,41 +187,65 @@ export default function ArtworkDetail() {
     )
   }
 
+  // 全屏模式：整页替换，不用 ScrollView
+  if (isFullscreen) {
+    return (
+      <View className='fullscreen-page'>
+        <Image
+          className='fullscreen-image'
+          src={artwork.image_url}
+          mode='aspectFit'
+        />
+        {/* 标注点 */}
+        {artwork.annotations && artwork.annotations.map((ann, index) => (
+          <View
+            key={index}
+            className={`annotation-dot ${activeAnnotation === index ? 'active' : ''}`}
+            style={{ left: `${ann.x}%`, top: `${ann.y}%` }}
+            onClick={() => handleAnnotation(index)}
+          >
+            <Text className='dot-text'>+</Text>
+          </View>
+        ))}
+        {/* 标注弹窗 */}
+        {activeAnnotation !== null && artwork.annotations && (
+          <View className='annotation-popup'>
+            <Text className='popup-title'>{artwork.annotations[activeAnnotation].title}</Text>
+            <Text className='popup-desc'>{artwork.annotations[activeAnnotation].desc}</Text>
+          </View>
+        )}
+        {/* 关闭全屏 */}
+        <View className='fullscreen-close' onClick={exitFullscreen}>
+          <Text className='fullscreen-close-text'>✕</Text>
+        </View>
+        {/* 提示 */}
+        <View className='fullscreen-hint'>
+          <Text className='fullscreen-hint-text'>点击 + 查看画作细节</Text>
+        </View>
+      </View>
+    )
+  }
+
+  // 普通模式
   return (
     <View className='artwork-detail'>
       <ScrollView scrollY={true} className='scroll-container'>
 
-        {/* 画作图片区域 */}
-        <View className='image-container'>
+        {/* 图片区域 - 点击进入全屏 */}
+        <View className='image-container' onClick={enterFullscreen}>
           <Image
             className='artwork-image'
             src={artwork.image_url}
             mode='aspectFit'
           />
-          {/* 标注点 */}
-          {artwork.annotations && artwork.annotations.map((ann, index) => (
-            <View
-              key={index}
-              className={`annotation-dot ${activeAnnotation === index ? 'active' : ''}`}
-              style={{ left: `${ann.x}%`, top: `${ann.y}%` }}
-              onClick={() => handleAnnotation(index)}
-            >
-              <Text className='dot-text'>+</Text>
-            </View>
-          ))}
-          {/* 标注弹窗 */}
-          {activeAnnotation !== null && artwork.annotations && (
-            <View className='annotation-popup'>
-              <Text className='popup-title'>{artwork.annotations[activeAnnotation].title}</Text>
-              <Text className='popup-desc'>{artwork.annotations[activeAnnotation].desc}</Text>
-            </View>
-          )}
+          <View className='tap-hint'>
+            <Text className='tap-hint-text'>点击查看细节 ⊕</Text>
+          </View>
         </View>
 
         {/* 画作信息 */}
         <View className='info-section'>
 
-          {/* AI生成标识 */}
           {artwork.isAIGenerated && (
             <View className='ai-badge'>
               <Text className='ai-text'>⚡ AI生成内容，仅供参考</Text>
@@ -263,7 +282,6 @@ export default function ArtworkDetail() {
             </View>
           </View>
 
-          {/* 标签 */}
           {artwork.tags && (
             <View className='tags-row'>
               {artwork.tags.map(tag => (
@@ -272,7 +290,6 @@ export default function ArtworkDetail() {
             </View>
           )}
 
-          {/* 讲解内容 */}
           <View className='description-section'>
             <Text className='section-title'>📖 画作故事</Text>
             <Text className='description'>
@@ -288,13 +305,11 @@ export default function ArtworkDetail() {
             </Text>
           </View>
 
-          {/* 艺术家链接 */}
           <View className='artist-link-row'>
             <Text className='artist-link-text'>了解更多关于 {artwork.artist_name} →</Text>
           </View>
 
         </View>
-
         <View className='bottom-space' />
       </ScrollView>
 
