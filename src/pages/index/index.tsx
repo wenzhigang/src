@@ -42,7 +42,7 @@ export default function Index() {
       // 逐个请求，避免 Promise.all 超时
       const artworksRes = await db.collection('artworks')
         .orderBy('_id', 'asc')
-        .limit(6)
+        .limit(20)
         .get()
       const artworks = artworksRes.data as Artwork[]
 
@@ -58,7 +58,7 @@ export default function Index() {
         .get()
       const museumsData = museumsRes.data as Museum[]
 
-      setRecentArtworks(artworks.slice(0, 4))
+      setRecentArtworks(artworks)
       setArtists(artistsData)
       setMuseums(museumsData)
 
@@ -123,11 +123,11 @@ export default function Index() {
         </View>
       </View>
 
-      {/* 热门艺术家 */}
+      {/* 艺术家 */}
       {artists.length > 0 && (
         <View className='section'>
           <View className='section-title-row'>
-            <Text className='section-title'>热门艺术家</Text>
+            <Text className='section-title'>艺术家</Text>
             <Text className='section-more'>查看全部</Text>
           </View>
           <ScrollView className='artist-scroll' scrollX={true}>
@@ -162,11 +162,11 @@ export default function Index() {
         </View>
       )}
 
-      {/* 最新收录 */}
+      {/* 作品 */}
       {recentArtworks.length > 0 && (
         <View className='section'>
           <View className='section-title-row'>
-            <Text className='section-title'>最新收录</Text>
+            <Text className='section-title'>作品</Text>
             <Text className='section-more'>查看全部</Text>
           </View>
           <View className='artwork-grid'>
