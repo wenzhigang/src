@@ -61,10 +61,8 @@ export default function ArtworkDetail() {
   const [favoriteDocId, setFavoriteDocId] = useState<string | null>(null)
   const [favoriteLoading, setFavoriteLoading] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [activeAnnotation, setActiveAnnotation] = useState<number | null>(null)
   const [showFullDesc, setShowFullDesc] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const [isLandscape, setIsLandscape] = useState(false)
 
   useEffect(() => {
     const params = ((Taro.getCurrentInstance() || {}).router || {}).params
@@ -154,33 +152,12 @@ export default function ArtworkDetail() {
     }
   }
 
-  const handleAnnotation = (index: number) => {
-    setActiveAnnotation(activeAnnotation === index ? null : index)
-  }
-
   const enterFullscreen = () => {
     setIsFullscreen(true)
-    setActiveAnnotation(null)
   }
 
   const exitFullscreen = () => {
     setIsFullscreen(false)
-    setActiveAnnotation(null)
-    // 退出全屏时恢复竖屏
-    if (isLandscape) {
-      Taro.setPageOrientation({ pageOrientation: 'portrait' })
-      setIsLandscape(false)
-    }
-  }
-
-  const toggleOrientation = () => {
-    if (isLandscape) {
-      Taro.setPageOrientation({ pageOrientation: 'portrait' })
-      setIsLandscape(false)
-    } else {
-      Taro.setPageOrientation({ pageOrientation: 'landscape' })
-      setIsLandscape(true)
-    }
   }
 
   if (loading) {
@@ -203,47 +180,23 @@ export default function ArtworkDetail() {
     )
   }
 
-  // 全屏模式：整页替换，不用 ScrollView
+  // 全屏模式：整页替换，纯净欣赏
   if (isFullscreen) {
     return (
-      <View className='fullscreen-page'>
+      <View className='fullscreen-page' onClick={exitFullscreen}>
         <Image
           className='fullscreen-image'
           src={artwork.image_url}
           mode='aspectFit'
         />
-        {/* 标注点 */}
-        {artwork.annotations && artwork.annotations.map((ann, index) => (
-          <View
-            key={index}
-            className={`annotation-dot ${activeAnnotation === index ? 'active' : ''}`}
-            style={{ left: `${ann.x}%`, top: `${ann.y}%` }}
-            onClick={() => handleAnnotation(index)}
-          >
-            <Text className='dot-text'>●</Text>
-          </View>
-        ))}
-        {/* 标注弹窗 */}
-        {activeAnnotation !== null && artwork.annotations && (
-          <View className='annotation-popup'>
-            <Text className='popup-title'>{artwork.annotations[activeAnnotation].title}</Text>
-            <Text className='popup-desc'>{artwork.annotations[activeAnnotation].desc}</Text>
-          </View>
-        )}
-        {/* 关闭全屏 */}
+        {/* 关闭全屏 - 右上角 */}
         <View className='fullscreen-close' onClick={exitFullscreen}>
           <Text className='fullscreen-close-text'>✕</Text>
         </View>
-        {/* 横竖屏切换按钮 */}
-        <View className='orientation-btn' onClick={toggleOrientation}>
-          <Text className='orientation-text'>⟳</Text>
+        {/* 提示文字 */}
+        <View className='fullscreen-hint'>
+          <Text className='fullscreen-hint-text'>旋转手机可横屏观看 · 点击任意处退出</Text>
         </View>
-        {/* 提示 - 横屏时隐藏 */}
-        {!isLandscape && (
-          <View className='fullscreen-hint'>
-            <Text className='fullscreen-hint-text'>点击标记点查看画作细节</Text>
-          </View>
-        )}
       </View>
     )
   }
