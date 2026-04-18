@@ -7,6 +7,7 @@
 import sys, os, json, subprocess
 
 ENV_ID = 'cloudbase-d7gl3kh5vf6b71edc'
+TCB = '/Users/zhigangwen/.nvm/versions/node/v24.15.0/bin/tcb'
 SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def upsert_record(collection, record):
@@ -22,7 +23,7 @@ def upsert_record(collection, record):
         })
     }]
     result = subprocess.run(
-        ['tcb', 'db', 'nosql', 'execute',
+        [TCB, 'db', 'nosql', 'execute',
          '--env-id', ENV_ID,
          '--command', json.dumps(cmd),
          '--json'],
@@ -30,9 +31,12 @@ def upsert_record(collection, record):
     )
     if result.returncode != 0:
         return False, result.stdout
-    out = json.loads(result.stdout)
-    if 'error' in out:
-        return False, out['error'].get('message', '')
+    try:
+        out = json.loads(result.stdout)
+        if 'error' in out:
+            return False, out['error'].get('message', '')
+    except:
+        pass
     return True, None
 
 def sync_collection(collection, json_file):
