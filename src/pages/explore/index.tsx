@@ -81,7 +81,7 @@ export default function Explore() {
         db.collection('artists').limit(20).get(),
         db.collection('artists').skip(20).limit(20).get(),
         db.collection('artists').skip(40).limit(20).get(),
-        db.collection('artworks').limit(20).get(),
+        db.collection('artworks').where({ is_featured: true }).limit(20).get(),
       ])
       if (museumsRes.status === 'fulfilled') setMuseums(museumsRes.value.data as Museum[])
       else setMuseums(fallbackMuseums)
