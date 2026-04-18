@@ -77,9 +77,9 @@ export default function Explore() {
     try {
       const db = Taro.cloud.database()
       const [museumsRes, artistsRes, artworksRes] = await Promise.allSettled([
-        db.collection('museums').orderBy('_id', 'asc').limit(20).get(),
-        db.collection('artists').orderBy('_id', 'asc').limit(20).get(),
-        db.collection('artworks').orderBy('_id', 'asc').limit(20).get(),
+        db.collection('museums').limit(20).get(),
+        db.collection('artists').limit(50).get(),
+        db.collection('artworks').limit(20).get(),
       ])
       if (museumsRes.status === 'fulfilled') setMuseums(museumsRes.value.data as Museum[])
       else setMuseums(fallbackMuseums)

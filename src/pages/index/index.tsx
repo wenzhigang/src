@@ -41,9 +41,9 @@ export default function Index() {
 
       // 并行请求，互不影响
       const [artworksRes, artistsRes, museumsRes] = await Promise.allSettled([
-        db.collection('artworks').orderBy('_id', 'asc').limit(12).get(),
-        db.collection('artists').orderBy('_id', 'asc').limit(10).get(),
-        db.collection('museums').orderBy('_id', 'asc').limit(10).get(),
+        db.collection('artworks').limit(12).get(),
+        db.collection('artists').limit(10).get(),
+        db.collection('museums').limit(10).get(),
       ])
 
       if (artworksRes.status === 'fulfilled') {
