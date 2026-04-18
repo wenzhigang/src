@@ -76,15 +76,21 @@ export default function Explore() {
   const loadData = async () => {
     try {
       const db = Taro.cloud.database()
-      const [museumsRes, artistsRes, artworksRes] = await Promise.allSettled([
+      const [museumsRes, artists1Res, artists2Res, artists3Res, artworksRes] = await Promise.allSettled([
         db.collection('museums').limit(20).get(),
-        db.collection('artists').limit(50).get(),
+        db.collection('artists').limit(20).get(),
+        db.collection('artists').skip(20).limit(20).get(),
+        db.collection('artists').skip(40).limit(20).get(),
         db.collection('artworks').limit(20).get(),
       ])
       if (museumsRes.status === 'fulfilled') setMuseums(museumsRes.value.data as Museum[])
       else setMuseums(fallbackMuseums)
-      if (artistsRes.status === 'fulfilled') setArtists(artistsRes.value.data as Artist[])
-      else setArtists(fallbackArtists)
+      const allArtists = [
+        ...(artists1Res.status === 'fulfilled' ? artists1Res.value.data as Artist[] : []),
+        ...(artists2Res.status === 'fulfilled' ? artists2Res.value.data as Artist[] : []),
+        ...(artists3Res.status === 'fulfilled' ? artists3Res.value.data as Artist[] : []),
+      ]
+      setArtists(allArtists.length > 0 ? allArtists : fallbackArtists)
       if (artworksRes.status === 'fulfilled') setArtworks(artworksRes.value.data as Artwork[])
     } catch (err) {
       console.error('探索页数据加载失败：', err)
