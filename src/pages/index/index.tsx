@@ -39,32 +39,39 @@ export default function Index() {
     try {
       const db = Taro.cloud.database()
 
-      // 逐个请求，避免 Promise.all 超时
-      const artworksRes = await db.collection('artworks')
-        .orderBy('_id', 'asc')
-        .limit(20)
-        .get()
-      const artworks = artworksRes.data as Artwork[]
+      // 各自独立请求，单个失败不影响其他
+      try {
+        const artworksRes = await db.collection('artworks')
+          .orderBy('_id', 'asc')
+          .limit(20)
+          .get()
+        setRecentArtworks(artworksRes.data as Artwork[])
+      } catch (e) {
+        console.error('artworks加载失败', e)
+      }
 
-      const artistsRes = await db.collection('artists')
-        .orderBy('_id', 'asc')
-        .limit(20)
-        .get()
-      const artistsData = artistsRes.data as Artist[]
+      try {
+        const artistsRes = await db.collection('artists')
+          .orderBy('_id', 'asc')
+          .limit(20)
+          .get()
+        setArtists(artistsRes.data as Artist[])
+      } catch (e) {
+        console.error('artists加载失败', e)
+      }
 
-      const museumsRes = await db.collection('museums')
-        .orderBy('_id', 'asc')
-        .limit(10)
-        .get()
-      const museumsData = museumsRes.data as Museum[]
-
-      setRecentArtworks(artworks)
-      setArtists(artistsData)
-      setMuseums(museumsData)
+      try {
+        const museumsRes = await db.collection('museums')
+          .orderBy('_id', 'asc')
+          .limit(10)
+          .get()
+        setMuseums(museumsRes.data as Museum[])
+      } catch (e) {
+        console.error('museums加载失败', e)
+      }
 
     } catch (err) {
       console.error('加载数据失败：', err)
-      // 加载失败时使用备用静态数据
       loadFallbackData()
     } finally {
       setLoading(false)
