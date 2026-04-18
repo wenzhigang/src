@@ -31,6 +31,7 @@ export default function ArtistDetail() {
   const [artworks, setArtworks] = useState<Artwork[]>([])
   const [loading, setLoading] = useState(true)
   const [showFullBio, setShowFullBio] = useState(false)
+  const [relatedArtists, setRelatedArtists] = useState<Artist[]>([])
 
   useEffect(() => {
     const params = ((Taro.getCurrentInstance() || {}).router || {}).params
@@ -46,6 +47,7 @@ export default function ArtistDetail() {
       const artistRes = await db.collection('artists').doc(artistId).get()
       const artistData = artistRes.data as Artist
       setArtist(artistData)
+      Taro.setNavigationBarTitle({ title: artistData.name })
 
       // 获取该艺术家的画作（通过 artist_name 匹配）
       const artworksRes = await db.collection('artworks')
@@ -53,6 +55,16 @@ export default function ArtistDetail() {
         .limit(20)
         .get()
       setArtworks(artworksRes.data as Artwork[])
+
+      // 获取同风格艺术家（最多3位，排除自己）
+      try {
+        const relatedRes = await db.collection('artists')
+          .where({ style: artistData.style })
+          .limit(6)
+          .get()
+        const related = (relatedRes.data as Artist[]).filter(a => a._id !== artistId).slice(0, 3)
+        setRelatedArtists(related)
+      } catch (e) {}
     } catch (err) {
       console.error('艺术家数据加载失败：', err)
     } finally {
@@ -155,6 +167,30 @@ export default function ArtistDetail() {
           </View>
         )}
       </View>
+
+      {/* 同时代艺术家 */}
+      {relatedArtists.length > 0 && (
+        <View className='section'>
+          <Text className='section-title'>同时代艺术家</Text>
+          <View className='related-list'>
+            {relatedArtists.map(a => (
+              <View
+                className='related-item'
+                key={a._id}
+                onClick={() => Taro.redirectTo({ url: `/pages/artist/index?id=${a._id}` })}
+              >
+                <Image className='related-avatar' src={a.avatar_url} mode='aspectFill' />
+                <View className='related-info'>
+                  <Text className='related-name'>{a.name}</Text>
+                  <Text className='related-style'>{a.style}</Text>
+                  <Text className='related-years'>{a.birth_year} – {a.death_year}</Text>
+                </View>
+                <Text className='related-arrow'>›</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
 
       <View className='bottom-space' />
     </ScrollView>

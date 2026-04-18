@@ -45,6 +45,7 @@ export default function MuseumDetail() {
       const museumRes = await db.collection('museums').doc(museumId).get()
       const museumData = museumRes.data as Museum
       setMuseum(museumData)
+      Taro.setNavigationBarTitle({ title: museumData.name })
 
       // 获取该博物馆的画作（通过 museum_name 匹配）
       const artworksRes = await db.collection('artworks')

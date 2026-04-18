@@ -151,7 +151,7 @@ $text-sub: rgba(255,255,255,0.6);
 
 .artwork-image {
   width: 100%;
-  height: 200rpx;
+  height: 260rpx;
 }
 
 .artwork-info {
@@ -200,4 +200,59 @@ $text-sub: rgba(255,255,255,0.6);
 // 底部留白
 .bottom-space {
   height: 80rpx;
+}
+
+// 同时代艺术家
+.related-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.related-item {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  padding: 20rpx;
+  background-color: rgba(255,255,255,0.05);
+  border-radius: 16rpx;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.related-avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 48rpx;
+  flex-shrink: 0;
+}
+
+.related-info {
+  flex: 1;
+}
+
+.related-name {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $text-main;
+}
+
+.related-style {
+  display: block;
+  font-size: 24rpx;
+  color: $gold;
+  margin-top: 4rpx;
+}
+
+.related-years {
+  display: block;
+  font-size: 22rpx;
+  color: $text-sub;
+  margin-top: 4rpx;
+}
+
+.related-arrow {
+  font-size: 36rpx;
+  color: rgba(255,255,255,0.3);
+  flex-shrink: 0;
 }
