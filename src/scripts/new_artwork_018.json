@@ -1,0 +1,28 @@
+{
+  "_id": "artwork_018",
+  "title": "乌菲兹美术馆",
+  "title_en": "Uffizi Gallery",
+  "artist_id": "",
+  "artist_name": "",
+  "museum_id": "",
+  "museum_name": "",
+  "year": "",
+  "style": "",
+  "medium": "",
+  "size": "",
+  "description": "乌菲兹美术馆是的代表作之一。（请补充详细描述）",
+  "image_url": "https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/uffizi_gallery.jpg",
+  "tags": [
+    "",
+    ""
+  ],
+  "is_featured": false,
+  "view_count": 0,
+  "annotations": [],
+  "ai_analysis": {
+    "technique": "（待补充）乌菲兹美术馆的技法分析",
+    "composition": "（待补充）乌菲兹美术馆的构图分析",
+    "emotion": "（待补充）乌菲兹美术馆的情感解读",
+    "influence": "（待补充）乌菲兹美术馆的历史影响"
+  }
+}
