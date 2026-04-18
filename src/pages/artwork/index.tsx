@@ -10,6 +10,13 @@ interface Annotation {
   desc: string
 }
 
+interface AiAnalysis {
+  technique: string
+  composition: string
+  emotion: string
+  influence: string
+}
+
 interface Artwork {
   _id: string
   title: string
@@ -28,6 +35,7 @@ interface Artwork {
   is_featured: boolean
   annotations: Annotation[]
   isAIGenerated?: boolean
+  ai_analysis?: AiAnalysis
 }
 
 const fallbackArtwork: Artwork = {
@@ -62,6 +70,7 @@ export default function ArtworkDetail() {
   const [favoriteLoading, setFavoriteLoading] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [showFullDesc, setShowFullDesc] = useState(false)
+  const [activeAiTab, setActiveAiTab] = useState<'technique' | 'composition' | 'emotion' | 'influence'>('technique')
   const [isFullscreen, setIsFullscreen] = useState(false)
 
   useEffect(() => {
@@ -302,6 +311,35 @@ export default function ArtworkDetail() {
               {showFullDesc ? '收起' : '阅读全文'}
             </Text>
           </View>
+
+          {/* AI 鉴赏分析 */}
+          {artwork.ai_analysis && (
+            <View className='ai-section'>
+              <View className='ai-section-header'>
+                <Text className='ai-section-title'>🤖 AI 鉴赏</Text>
+                <Text className='ai-section-sub'>由 AI 生成，仅供参考</Text>
+              </View>
+              <View className='ai-tabs'>
+                {([
+                  { key: 'technique', label: '技法' },
+                  { key: 'composition', label: '构图' },
+                  { key: 'emotion', label: '情感' },
+                  { key: 'influence', label: '影响' },
+                ] as const).map(tab => (
+                  <View
+                    key={tab.key}
+                    className={`ai-tab ${activeAiTab === tab.key ? 'active' : ''}`}
+                    onClick={() => setActiveAiTab(tab.key)}
+                  >
+                    <Text className='ai-tab-text'>{tab.label}</Text>
+                  </View>
+                ))}
+              </View>
+              <Text className='ai-content'>
+                {artwork.ai_analysis[activeAiTab]}
+              </Text>
+            </View>
+          )}
 
           <View className='artist-link-row'>
             <Text className='artist-link-text'>了解更多关于 {artwork.artist_name} →</Text>
