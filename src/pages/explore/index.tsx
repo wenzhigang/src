@@ -126,11 +126,11 @@ export default function Explore() {
   }
 
   const goToMuseum = (id: string) => {
-    Taro.showToast({ title: '博物馆详情页开发中', icon: 'none', duration: 1500 })
+    Taro.navigateTo({ url: `/pages/museum/index?id=${id}` })
   }
 
   const goToArtist = (id: string) => {
-    Taro.showToast({ title: '艺术家详情页开发中', icon: 'none', duration: 1500 })
+    Taro.navigateTo({ url: `/pages/artist/index?id=${id}` })
   }
 
   const clearSearch = () => {

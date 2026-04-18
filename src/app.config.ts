@@ -6,6 +6,8 @@ export default defineAppConfig({
     'pages/education/index',
     'pages/profile/index',
     'pages/artwork/index',
+    'pages/artist/index',
+    'pages/museum/index',
   ],
   window: {
     backgroundTextStyle: 'light',
@@ -20,26 +22,11 @@ export default defineAppConfig({
     backgroundColor: '#FFFFFF',
     borderStyle: 'white',
     list: [
-      {
-        pagePath: 'pages/index/index',
-        text: '首页',
-      },
-      {
-        pagePath: 'pages/explore/index',
-        text: '探索',
-      },
-      {
-        pagePath: 'pages/scan/index',
-        text: '拍照',
-      },
-      {
-        pagePath: 'pages/education/index',
-        text: '教育',
-      },
-      {
-        pagePath: 'pages/profile/index',
-        text: '我的',
-      },
+      { pagePath: 'pages/index/index', text: '首页' },
+      { pagePath: 'pages/explore/index', text: '探索' },
+      { pagePath: 'pages/scan/index', text: '拍照' },
+      { pagePath: 'pages/education/index', text: '教育' },
+      { pagePath: 'pages/profile/index', text: '我的' },
     ],
   },
 })

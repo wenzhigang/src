@@ -96,11 +96,11 @@ export default function Index() {
   }
 
   const goToArtist = (id: string) => {
-    Taro.showToast({ title: '艺术家页面开发中', icon: 'none' })
+    Taro.navigateTo({ url: `/pages/artist/index?id=${id}` })
   }
 
   const goToMuseum = (id: string) => {
-    Taro.showToast({ title: '博物馆页面开发中', icon: 'none' })
+    Taro.navigateTo({ url: `/pages/museum/index?id=${id}` })
   }
 
   if (loading) {
