@@ -56,6 +56,17 @@ export default function Explore() {
   const [searchResults, setSearchResults] = useState<any[]>([])
 
   useEffect(() => {
+    // 读取 URL 参数中的 tab
+    const params = ((Taro.getCurrentInstance() || {}).router || {}).params
+    if (params && params.tab) {
+      const tabMap: Record<string, 'artwork' | 'artist' | 'museum'> = {
+        artwork: 'artwork', artist: 'artist', museum: 'museum'
+      }
+      if (tabMap[params.tab]) setActiveTab(tabMap[params.tab])
+    }
+  }, [])
+
+  useEffect(() => {
     loadData()
   }, [])
 

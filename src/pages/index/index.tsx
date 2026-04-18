@@ -48,13 +48,13 @@ export default function Index() {
 
       const artistsRes = await db.collection('artists')
         .orderBy('_id', 'asc')
-        .limit(6)
+        .limit(20)
         .get()
       const artistsData = artistsRes.data as Artist[]
 
       const museumsRes = await db.collection('museums')
         .orderBy('_id', 'asc')
-        .limit(6)
+        .limit(10)
         .get()
       const museumsData = museumsRes.data as Museum[]
 
@@ -128,7 +128,7 @@ export default function Index() {
         <View className='section'>
           <View className='section-title-row'>
             <Text className='section-title'>艺术家</Text>
-            <Text className='section-more'>查看全部</Text>
+            <Text className='section-more' onClick={() => Taro.navigateTo({ url: '/pages/explore/index?tab=artist' })}>查看全部</Text>
           </View>
           <ScrollView className='artist-scroll' scrollX={true}>
             {artists.map(artist => (
@@ -146,7 +146,7 @@ export default function Index() {
         <View className='section'>
           <View className='section-title-row'>
             <Text className='section-title'>博物馆</Text>
-            <Text className='section-more'>查看全部</Text>
+            <Text className='section-more' onClick={() => Taro.navigateTo({ url: '/pages/explore/index?tab=museum' })}>查看全部</Text>
           </View>
           <ScrollView className='museum-scroll' scrollX={true}>
             {museums.map(museum => (
@@ -167,7 +167,7 @@ export default function Index() {
         <View className='section'>
           <View className='section-title-row'>
             <Text className='section-title'>作品</Text>
-            <Text className='section-more'>查看全部</Text>
+            <Text className='section-more' onClick={() => Taro.navigateTo({ url: '/pages/explore/index?tab=artwork' })}>查看全部</Text>
           </View>
           <View className='artwork-grid'>
             {recentArtworks.map(artwork => (
