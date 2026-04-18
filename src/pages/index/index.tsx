@@ -39,35 +39,21 @@ export default function Index() {
     try {
       const db = Taro.cloud.database()
 
-      // 各自独立请求，单个失败不影响其他
-      try {
-        const artworksRes = await db.collection('artworks')
-          .orderBy('_id', 'asc')
-          .limit(20)
-          .get()
-        setRecentArtworks(artworksRes.data as Artwork[])
-      } catch (e) {
-        console.error('artworks加载失败', e)
-      }
+      // 并行请求，互不影响
+      const [artworksRes, artistsRes, museumsRes] = await Promise.allSettled([
+        db.collection('artworks').orderBy('_id', 'asc').limit(12).get(),
+        db.collection('artists').orderBy('_id', 'asc').limit(10).get(),
+        db.collection('museums').orderBy('_id', 'asc').limit(10).get(),
+      ])
 
-      try {
-        const artistsRes = await db.collection('artists')
-          .orderBy('_id', 'asc')
-          .limit(20)
-          .get()
-        setArtists(artistsRes.data as Artist[])
-      } catch (e) {
-        console.error('artists加载失败', e)
+      if (artworksRes.status === 'fulfilled') {
+        setRecentArtworks(artworksRes.value.data as Artwork[])
       }
-
-      try {
-        const museumsRes = await db.collection('museums')
-          .orderBy('_id', 'asc')
-          .limit(10)
-          .get()
-        setMuseums(museumsRes.data as Museum[])
-      } catch (e) {
-        console.error('museums加载失败', e)
+      if (artistsRes.status === 'fulfilled') {
+        setArtists(artistsRes.value.data as Artist[])
+      }
+      if (museumsRes.status === 'fulfilled') {
+        setMuseums(museumsRes.value.data as Museum[])
       }
 
     } catch (err) {
