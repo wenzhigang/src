@@ -40,9 +40,11 @@ const fallbackMuseums: Museum[] = [
 ]
 
 const fallbackArtists: Artist[] = [
-  { _id: 'artist_001', name: '列奥纳多·达芬奇', name_en: 'Leonardo da Vinci', style: '文艺复兴', birth_year: 1452, death_year: 1519, avatar_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/mona_lisa.jpg', artwork_count: 3 },
-  { _id: 'artist_002', name: '文森特·梵高', name_en: 'Vincent van Gogh', style: '后印象派', birth_year: 1853, death_year: 1890, avatar_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/starry_night.jpg', artwork_count: 2 },
-  { _id: 'artist_003', name: '克劳德·莫奈', name_en: 'Claude Monet', style: '印象派', birth_year: 1840, death_year: 1926, avatar_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/water_lilies.jpg', artwork_count: 2 },
+  { _id: 'artist_001', name: '列奥纳多·达芬奇', name_en: 'Leonardo da Vinci', style: '文艺复兴', birth_year: 1452, death_year: 1519, avatar_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/portrait_davinci.jpg', artwork_count: 3 },
+  { _id: 'artist_002', name: '文森特·梵高', name_en: 'Vincent van Gogh', style: '后印象派', birth_year: 1853, death_year: 1890, avatar_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/portrait_vangogh.jpg', artwork_count: 2 },
+  { _id: 'artist_003', name: '克劳德·莫奈', name_en: 'Claude Monet', style: '印象派', birth_year: 1840, death_year: 1926, avatar_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/portrait_monet.jpg', artwork_count: 2 },
+  { _id: 'artist_004', name: '拉斐尔', name_en: 'Raphael', style: '文艺复兴', birth_year: 1483, death_year: 1520, avatar_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/portrait_raphael.jpg', artwork_count: 1 },
+  { _id: 'artist_005', name: '桑德罗·波提切利', name_en: 'Sandro Botticelli', style: '早期文艺复兴', birth_year: 1445, death_year: 1510, avatar_url: 'https://636c-cloudbase-d7gl3kh5vf6b71edc-1422923265.tcb.qcloud.la/images/artworks/portrait_botticelli.jpg', artwork_count: 1 },
 ]
 
 export default function Explore() {
@@ -74,14 +76,16 @@ export default function Explore() {
   const loadData = async () => {
     try {
       const db = Taro.cloud.database()
-      const [museumsRes, artistsRes, artworksRes] = await Promise.all([
+      const [museumsRes, artistsRes, artworksRes] = await Promise.allSettled([
         db.collection('museums').orderBy('_id', 'asc').limit(20).get(),
-        db.collection('artists').orderBy('_id', 'asc').limit(20).get(),
-        db.collection('artworks').orderBy('_id', 'asc').limit(50).get(),
+        db.collection('artists').orderBy('_id', 'asc').limit(50).get(),
+        db.collection('artworks').orderBy('_id', 'asc').limit(20).get(),
       ])
-      setMuseums(museumsRes.data as Museum[])
-      setArtists(artistsRes.data as Artist[])
-      setArtworks(artworksRes.data as Artwork[])
+      if (museumsRes.status === 'fulfilled') setMuseums(museumsRes.value.data as Museum[])
+      else setMuseums(fallbackMuseums)
+      if (artistsRes.status === 'fulfilled') setArtists(artistsRes.value.data as Artist[])
+      else setArtists(fallbackArtists)
+      if (artworksRes.status === 'fulfilled') setArtworks(artworksRes.value.data as Artwork[])
     } catch (err) {
       console.error('探索页数据加载失败：', err)
       setMuseums(fallbackMuseums)
