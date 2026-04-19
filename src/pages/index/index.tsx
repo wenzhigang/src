@@ -41,7 +41,7 @@ export default function Index() {
 
       // 并行请求，互不影响
       const [artworksRes, artistsRes, museumsRes] = await Promise.allSettled([
-        db.collection('artworks').limit(12).get(),
+        db.collection('artworks').where({ seq: db.command.gte(1).and(db.command.lte(12)) }).limit(12).get(),
         db.collection('artists').limit(10).get(),
         db.collection('museums').limit(10).get(),
       ])
