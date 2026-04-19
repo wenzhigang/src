@@ -76,6 +76,7 @@ export default function Explore() {
   const loadData = async () => {
     try {
       const db = Taro.cloud.database()
+      // 第一批：博物馆、艺术家、画作前40幅
       const [museumsRes, artists1Res, artists2Res, artists3Res, artworks1Res, artworks2Res] = await Promise.allSettled([
         db.collection('museums').limit(20).get(),
         db.collection('artists').limit(20).get(),
@@ -92,11 +93,25 @@ export default function Explore() {
         ...(artists3Res.status === 'fulfilled' ? artists3Res.value.data as Artist[] : []),
       ]
       setArtists(allArtists.length > 0 ? allArtists : fallbackArtists)
-      const allArtworks = [
+      const batch1 = [
         ...(artworks1Res.status === 'fulfilled' ? artworks1Res.value.data as Artwork[] : []),
         ...(artworks2Res.status === 'fulfilled' ? artworks2Res.value.data as Artwork[] : []),
       ]
-      setArtworks(allArtworks)
+      setArtworks(batch1)
+
+      // 第二批：画作40-100幅
+      const [artworks3Res, artworks4Res, artworks5Res] = await Promise.allSettled([
+        db.collection('artworks').skip(40).limit(20).get(),
+        db.collection('artworks').skip(60).limit(20).get(),
+        db.collection('artworks').skip(80).limit(20).get(),
+      ])
+      const batch2 = [
+        ...batch1,
+        ...(artworks3Res.status === 'fulfilled' ? artworks3Res.value.data as Artwork[] : []),
+        ...(artworks4Res.status === 'fulfilled' ? artworks4Res.value.data as Artwork[] : []),
+        ...(artworks5Res.status === 'fulfilled' ? artworks5Res.value.data as Artwork[] : []),
+      ]
+      setArtworks(batch2)
     } catch (err) {
       console.error('探索页数据加载失败：', err)
       setMuseums(fallbackMuseums)
