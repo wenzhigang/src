@@ -119,8 +119,16 @@ export default function Explore() {
         ...(artworks6Res.status === 'fulfilled' ? artworks6Res.value.data as Artwork[] : []),
         ...(artworks7Res.status === 'fulfilled' ? artworks7Res.value.data as Artwork[] : []),
       ]
-      console.log('total artworks:', allArtworks.length)
-      setArtworks(allArtworks)
+      // 去重并按seq排序
+      const seen = new Set<string>()
+      const unique = allArtworks.filter(a => {
+        if (seen.has(a._id)) return false
+        seen.add(a._id)
+        return true
+      })
+      unique.sort((a: any, b: any) => (a.seq || 0) - (b.seq || 0))
+      console.log('total artworks after dedup:', unique.length)
+      setArtworks(unique)
     } catch (err) {
       console.error('探索页数据加载失败：', err)
       setMuseums(fallbackMuseums)
