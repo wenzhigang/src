@@ -72,12 +72,50 @@ export default function ArtworkDetail() {
   const [showFullDesc, setShowFullDesc] = useState(false)
   const [activeAiTab, setActiveAiTab] = useState<'technique' | 'composition' | 'emotion' | 'influence'>('technique')
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [artworkList, setArtworkList] = useState<string[]>([])
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [touchStartX, setTouchStartX] = useState(0)
+  const [isSwiping, setIsSwiping] = useState(false)
 
   useEffect(() => {
     const params = ((Taro.getCurrentInstance() || {}).router || {}).params
     const id = params && params.id || 'artwork_002'
+    // 从全局变量读取画作列表
+    const list = (Taro as any)._artworkList as string[] || []
+    if (list.length > 0) {
+      setArtworkList(list)
+      const idx = list.indexOf(id)
+      setCurrentIndex(idx >= 0 ? idx : 0)
+    }
     loadArtwork(id)
   }, [])
+
+  const switchArtwork = (direction: 'prev' | 'next') => {
+    if (artworkList.length === 0) return
+    const newIndex = direction === 'prev' ? currentIndex - 1 : currentIndex + 1
+    if (newIndex < 0 || newIndex >= artworkList.length) {
+      Taro.showToast({ title: direction === 'prev' ? '已是第一幅' : '已是最后一幅', icon: 'none', duration: 1000 })
+      return
+    }
+    setCurrentIndex(newIndex)
+    setLoading(true)
+    setArtwork(null)
+    loadArtwork(artworkList[newIndex])
+  }
+
+  const onTouchStart = (e: any) => {
+    setTouchStartX(e.touches[0].clientX)
+    setIsSwiping(true)
+  }
+
+  const onTouchEnd = (e: any) => {
+    if (!isSwiping) return
+    const deltaX = e.changedTouches[0].clientX - touchStartX
+    if (Math.abs(deltaX) > 50) {
+      switchArtwork(deltaX > 0 ? 'prev' : 'next')
+    }
+    setIsSwiping(false)
+  }
 
   const loadArtwork = async (id: string) => {
     try {
@@ -201,10 +239,14 @@ export default function ArtworkDetail() {
     )
   }
 
-  // 全屏模式：支持双指缩放
+  // 全屏模式：支持双指缩放 + 左右滑动切换
   if (isFullscreen) {
     return (
-      <View className='fullscreen-page'>
+      <View
+        className='fullscreen-page'
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
         <MovableArea className='movable-area' scale>
           <MovableView
             className='movable-view'
@@ -224,13 +266,34 @@ export default function ArtworkDetail() {
             />
           </MovableView>
         </MovableArea>
+        {artworkList.length > 1 && (
+          <View className='fullscreen-nav'>
+            <Text className='fullscreen-nav-text'>
+              {currentIndex + 1} / {artworkList.length}
+            </Text>
+          </View>
+        )}
+        {artworkList.length > 1 && currentIndex > 0 && (
+          <View className='fullscreen-prev' onClick={(e) => { e.stopPropagation(); switchArtwork('prev') }}>
+            <Text className='nav-arrow'>‹</Text>
+          </View>
+        )}
+        {artworkList.length > 1 && currentIndex < artworkList.length - 1 && (
+          <View className='fullscreen-next' onClick={(e) => { e.stopPropagation(); switchArtwork('next') }}>
+            <Text className='nav-arrow'>›</Text>
+          </View>
+        )}
       </View>
     )
   }
 
   // 普通模式
   return (
-    <View className='artwork-detail'>
+    <View
+      className='artwork-detail'
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+    >
       <ScrollView scrollY={true} className='scroll-container'>
 
         {/* 图片区域 - 点击进入全屏 */}
@@ -240,6 +303,11 @@ export default function ArtworkDetail() {
             src={artwork.image_url}
             mode='aspectFit'
           />
+          {artworkList.length > 1 && (
+            <View className='artwork-nav-dots'>
+              <Text className='artwork-nav-text'>{currentIndex + 1} / {artworkList.length}</Text>
+            </View>
+          )}
         </View>
 
         {/* 画作信息 */}

@@ -106,7 +106,10 @@ export default function Index() {
     ])
   }
 
-  const goToArtwork = (id: string) => {
+  const goToArtwork = (id: string, list?: string[]) => {
+    if (list && list.length > 0) {
+      (Taro as any)._artworkList = list
+    }
     Taro.navigateTo({ url: `/pages/artwork/index?id=${id}` })
   }
 
@@ -186,7 +189,7 @@ export default function Index() {
           </View>
           <View className='artwork-grid'>
             {recentArtworks.map(artwork => (
-              <View className='artwork-card' key={artwork._id} onClick={() => goToArtwork(artwork._id)}>
+              <View className='artwork-card' key={artwork._id} onClick={() => goToArtwork(artwork._id, recentArtworks.map(a => a._id))}>
                 <Image className='artwork-image' src={artwork.image_url} mode='aspectFill' />
                 <View className='artwork-info'>
                   <Text className='artwork-title'>{artwork.title}</Text>

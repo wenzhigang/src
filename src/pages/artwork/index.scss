@@ -516,3 +516,53 @@ $white: #FFFFFF;
   color: rgba(255,255,255,0.8);
   line-height: 1.8;
 }
+
+// 画作切换导航
+.artwork-nav-dots {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: rgba(0,0,0,0.5);
+  border-radius: 12px;
+  padding: 4px 10px;
+  .artwork-nav-text {
+    color: #fff;
+    font-size: 24px;
+  }
+}
+
+.fullscreen-nav {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.5);
+  border-radius: 20px;
+  padding: 6px 16px;
+  z-index: 100;
+  .fullscreen-nav-text {
+    color: #fff;
+    font-size: 26px;
+  }
+}
+
+.fullscreen-prev, .fullscreen-next {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 80px;
+  height: 80px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  .nav-arrow {
+    color: #fff;
+    font-size: 60px;
+    line-height: 1;
+  }
+}
+.fullscreen-prev { left: 20px; }
+.fullscreen-next { right: 20px; }
