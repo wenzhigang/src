@@ -95,13 +95,11 @@ export default function Explore() {
         ...(artists3Res.status === 'fulfilled' ? artists3Res.value.data as Artist[] : []),
       ]
       setArtists(allArtists.length > 0 ? allArtists : fallbackArtists)
-      console.log('batch1 status:', artworks1Res.status, artworks2Res.status, artworks3Res.status)
       const batch1 = [
         ...(artworks1Res.status === 'fulfilled' ? artworks1Res.value.data as Artwork[] : []),
         ...(artworks2Res.status === 'fulfilled' ? artworks2Res.value.data as Artwork[] : []),
         ...(artworks3Res.status === 'fulfilled' ? artworks3Res.value.data as Artwork[] : []),
       ]
-      console.log('batch1 count:', batch1.length)
       setArtworks(batch1)
 
       // 第二批：画作61-190
@@ -111,7 +109,6 @@ export default function Explore() {
         db.collection('artworks').where({ seq: _.gte(121).and(_.lte(155)) }).limit(35).get(),
         db.collection('artworks').where({ seq: _.gte(156).and(_.lte(190)) }).limit(35).get(),
       ])
-      console.log('batch2 status:', artworks4Res.status, artworks5Res.status, artworks6Res.status, artworks7Res.status)
       const allArtworks = [
         ...batch1,
         ...(artworks4Res.status === 'fulfilled' ? artworks4Res.value.data as Artwork[] : []),
@@ -127,7 +124,6 @@ export default function Explore() {
         return true
       })
       unique.sort((a: any, b: any) => (a.seq || 0) - (b.seq || 0))
-      console.log('total artworks after dedup:', unique.length)
       setArtworks(unique)
     } catch (err) {
       console.error('探索页数据加载失败：', err)
