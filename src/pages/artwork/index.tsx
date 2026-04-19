@@ -273,16 +273,7 @@ export default function ArtworkDetail() {
             </Text>
           </View>
         )}
-        {artworkList.length > 1 && currentIndex > 0 && (
-          <View className='fullscreen-prev' onClick={(e) => { e.stopPropagation(); switchArtwork('prev') }}>
-            <Text className='nav-arrow'>‹</Text>
-          </View>
-        )}
-        {artworkList.length > 1 && currentIndex < artworkList.length - 1 && (
-          <View className='fullscreen-next' onClick={(e) => { e.stopPropagation(); switchArtwork('next') }}>
-            <Text className='nav-arrow'>›</Text>
-          </View>
-        )}
+
       </View>
     )
   }
