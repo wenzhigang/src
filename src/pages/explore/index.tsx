@@ -76,14 +76,16 @@ export default function Explore() {
   const loadData = async () => {
     try {
       const db = Taro.cloud.database()
-      // 第一批：博物馆、艺术家、画作前40幅
-      const [museumsRes, artists1Res, artists2Res, artists3Res, artworks1Res, artworks2Res] = await Promise.allSettled([
+      const _ = db.command
+      // 第一批：博物馆、艺术家、画作001-060
+      const [museumsRes, artists1Res, artists2Res, artists3Res, artworks1Res, artworks2Res, artworks3Res] = await Promise.allSettled([
         db.collection('museums').limit(20).get(),
         db.collection('artists').limit(20).get(),
         db.collection('artists').skip(20).limit(20).get(),
         db.collection('artists').skip(40).limit(20).get(),
-        db.collection('artworks').limit(20).get(),
-        db.collection('artworks').skip(20).limit(20).get(),
+        db.collection('artworks').where({ _id: _.gte('artwork_001').and(_.lte('artwork_020')) }).limit(20).get(),
+        db.collection('artworks').where({ _id: _.gte('artwork_021').and(_.lte('artwork_040')) }).limit(20).get(),
+        db.collection('artworks').where({ _id: _.gte('artwork_041').and(_.lte('artwork_060')) }).limit(20).get(),
       ])
       if (museumsRes.status === 'fulfilled') setMuseums(museumsRes.value.data as Museum[])
       else setMuseums(fallbackMuseums)
@@ -96,22 +98,25 @@ export default function Explore() {
       const batch1 = [
         ...(artworks1Res.status === 'fulfilled' ? artworks1Res.value.data as Artwork[] : []),
         ...(artworks2Res.status === 'fulfilled' ? artworks2Res.value.data as Artwork[] : []),
+        ...(artworks3Res.status === 'fulfilled' ? artworks3Res.value.data as Artwork[] : []),
       ]
       setArtworks(batch1)
 
-      // 第二批：画作40-100幅
-      const [artworks3Res, artworks4Res, artworks5Res] = await Promise.allSettled([
-        db.collection('artworks').skip(40).limit(20).get(),
-        db.collection('artworks').skip(60).limit(20).get(),
-        db.collection('artworks').skip(80).limit(20).get(),
+      // 第二批：画作061-190
+      const [artworks4Res, artworks5Res, artworks6Res, artworks7Res] = await Promise.allSettled([
+        db.collection('artworks').where({ _id: _.gte('artwork_061').and(_.lte('artwork_090')) }).limit(30).get(),
+        db.collection('artworks').where({ _id: _.gte('artwork_091').and(_.lte('artwork_120')) }).limit(30).get(),
+        db.collection('artworks').where({ _id: _.gte('artwork_121').and(_.lte('artwork_155')) }).limit(35).get(),
+        db.collection('artworks').where({ _id: _.gte('artwork_156').and(_.lte('artwork_190')) }).limit(35).get(),
       ])
-      const batch2 = [
+      const allArtworks = [
         ...batch1,
-        ...(artworks3Res.status === 'fulfilled' ? artworks3Res.value.data as Artwork[] : []),
         ...(artworks4Res.status === 'fulfilled' ? artworks4Res.value.data as Artwork[] : []),
         ...(artworks5Res.status === 'fulfilled' ? artworks5Res.value.data as Artwork[] : []),
+        ...(artworks6Res.status === 'fulfilled' ? artworks6Res.value.data as Artwork[] : []),
+        ...(artworks7Res.status === 'fulfilled' ? artworks7Res.value.data as Artwork[] : []),
       ]
-      setArtworks(batch2)
+      setArtworks(allArtworks)
     } catch (err) {
       console.error('探索页数据加载失败：', err)
       setMuseums(fallbackMuseums)
