@@ -77,15 +77,15 @@ export default function Explore() {
     try {
       const db = Taro.cloud.database()
       const _ = db.command
-      // 第一批：博物馆、艺术家、画作001-060
+      // 第一批：博物馆、艺术家、画作1-60
       const [museumsRes, artists1Res, artists2Res, artists3Res, artworks1Res, artworks2Res, artworks3Res] = await Promise.allSettled([
         db.collection('museums').limit(20).get(),
         db.collection('artists').limit(20).get(),
         db.collection('artists').skip(20).limit(20).get(),
         db.collection('artists').skip(40).limit(20).get(),
-        db.collection('artworks').where({ _id: _.gte('artwork_001').and(_.lte('artwork_020')) }).limit(20).get(),
-        db.collection('artworks').where({ _id: _.gte('artwork_021').and(_.lte('artwork_040')) }).limit(20).get(),
-        db.collection('artworks').where({ _id: _.gte('artwork_041').and(_.lte('artwork_060')) }).limit(20).get(),
+        db.collection('artworks').where({ seq: _.gte(1).and(_.lte(20)) }).limit(20).get(),
+        db.collection('artworks').where({ seq: _.gte(21).and(_.lte(40)) }).limit(20).get(),
+        db.collection('artworks').where({ seq: _.gte(41).and(_.lte(60)) }).limit(20).get(),
       ])
       if (museumsRes.status === 'fulfilled') setMuseums(museumsRes.value.data as Museum[])
       else setMuseums(fallbackMuseums)
@@ -102,12 +102,12 @@ export default function Explore() {
       ]
       setArtworks(batch1)
 
-      // 第二批：画作061-190
+      // 第二批：画作61-190
       const [artworks4Res, artworks5Res, artworks6Res, artworks7Res] = await Promise.allSettled([
-        db.collection('artworks').where({ _id: _.gte('artwork_061').and(_.lte('artwork_090')) }).limit(30).get(),
-        db.collection('artworks').where({ _id: _.gte('artwork_091').and(_.lte('artwork_120')) }).limit(30).get(),
-        db.collection('artworks').where({ _id: _.gte('artwork_121').and(_.lte('artwork_155')) }).limit(35).get(),
-        db.collection('artworks').where({ _id: _.gte('artwork_156').and(_.lte('artwork_190')) }).limit(35).get(),
+        db.collection('artworks').where({ seq: _.gte(61).and(_.lte(90)) }).limit(30).get(),
+        db.collection('artworks').where({ seq: _.gte(91).and(_.lte(120)) }).limit(30).get(),
+        db.collection('artworks').where({ seq: _.gte(121).and(_.lte(155)) }).limit(35).get(),
+        db.collection('artworks').where({ seq: _.gte(156).and(_.lte(190)) }).limit(35).get(),
       ])
       const allArtworks = [
         ...batch1,
