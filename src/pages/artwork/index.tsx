@@ -155,6 +155,8 @@ export default function ArtworkDetail() {
             title: artwork.title,
             artist_name: artwork.artist_name,
             image_url: artwork.image_url,
+            artist_id: artwork.artist_id,
+            museum_id: artwork.museum_id,
             viewed_at: db.serverDate(),
             view_count: 1,
           }
