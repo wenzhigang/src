@@ -28,12 +28,25 @@ interface FavoriteArtwork {
   image_url: string
 }
 
+interface HistoryArtwork {
+  _id: string
+  artwork_id: string
+  title: string
+  artist_name: string
+  image_url: string
+  viewed_at: any
+  view_count: number
+}
+
 export default function Profile() {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
-  const [activeSection, setActiveSection] = useState<'favorites' | 'badges'>('favorites')
+
   const [favorites, setFavorites] = useState<FavoriteArtwork[]>([])
   const [loadingFavorites, setLoadingFavorites] = useState(false)
   const [loginLoading, setLoginLoading] = useState(false)
+  const [history, setHistory] = useState<HistoryArtwork[]>([])
+  const [loadingHistory, setLoadingHistory] = useState(false)
+  const [activeSection, setActiveSection] = useState<'favorites' | 'history' | 'badges'>('favorites')
 
   useEffect(() => {
     // 首次加载时读取登录信息
@@ -49,6 +62,7 @@ export default function Profile() {
     if (stored && stored.openid) {
       setUserInfo(stored)
       loadFavorites(stored.openid)
+      loadHistory(stored.openid)
     }
   })
 
@@ -67,6 +81,23 @@ export default function Profile() {
       console.error('加载收藏失败：', err)
     } finally {
       setLoadingFavorites(false)
+    }
+  }
+
+  const loadHistory = async (openid: string) => {
+    setLoadingHistory(true)
+    try {
+      const db = Taro.cloud.database()
+      const res = await db.collection('history')
+        .where({ openid })
+        .orderBy('viewed_at', 'desc')
+        .limit(50)
+        .get()
+      setHistory(res.data as HistoryArtwork[])
+    } catch (err) {
+      console.error('加载历史失败：', err)
+    } finally {
+      setLoadingHistory(false)
     }
   }
 
@@ -175,8 +206,8 @@ export default function Profile() {
           <Text className='stat-label'>收藏</Text>
         </View>
         <View className='stat-divider' />
-        <View className='stat-item'>
-          <Text className='stat-number'>0</Text>
+        <View className='stat-item' onClick={() => setActiveSection('history')}>
+          <Text className='stat-number'>{history.length}</Text>
           <Text className='stat-label'>已看</Text>
         </View>
         <View className='stat-divider' />
@@ -193,6 +224,12 @@ export default function Profile() {
           onClick={() => setActiveSection('favorites')}
         >
           <Text className='section-tab-text'>我的收藏</Text>
+        </View>
+        <View
+          className={`section-tab ${activeSection === 'history' ? 'active' : ''}`}
+          onClick={() => setActiveSection('history')}
+        >
+          <Text className='section-tab-text'>浏览历史</Text>
         </View>
         <View
           className={`section-tab ${activeSection === 'badges' ? 'active' : ''}`}
@@ -230,6 +267,42 @@ export default function Profile() {
               <Text className='empty-icon'>🖼️</Text>
               <Text className='empty-text'>还没有收藏画作</Text>
               <Text className='empty-sub'>去探索喜欢的画作吧</Text>
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* 浏览历史 */}
+      {activeSection === 'history' && (
+        <View className='favorites-section'>
+          {loadingHistory ? (
+            <View className='empty-state'>
+              <Text className='empty-text'>加载中...</Text>
+            </View>
+          ) : history.length > 0 ? (
+            <View className='artwork-grid'>
+              {history.map(item => (
+                <View
+                  className='artwork-item'
+                  key={item._id}
+                  onClick={() => {
+                    ;(Taro as any)._artworkList = history.map(h => h.artwork_id)
+                    Taro.navigateTo({ url: `/pages/artwork/index?id=${item.artwork_id}` })
+                  }}
+                >
+                  <Image className='artwork-img' src={item.image_url} mode='aspectFill' />
+                  <View className='artwork-info'>
+                    <Text className='artwork-title'>{item.title}</Text>
+                    <Text className='artwork-artist'>{item.artist_name}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View className='empty-state'>
+              <Text className='empty-icon'>👁️</Text>
+              <Text className='empty-text'>还没有浏览记录</Text>
+              <Text className='empty-sub'>去探索画作吧</Text>
             </View>
           )}
         </View>

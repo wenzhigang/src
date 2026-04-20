@@ -124,12 +124,44 @@ export default function ArtworkDetail() {
       const artworkData = res.data as Artwork
       setArtwork(artworkData)
       checkFavoriteStatus(id)
+      recordHistory(artworkData)
     } catch (err) {
       console.error('画作数据加载失败，使用备用数据：', err)
       setArtwork(fallbackArtwork)
       checkFavoriteStatus(fallbackArtwork._id)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const recordHistory = async (artwork: Artwork) => {
+    try {
+      const userInfo = Taro.getStorageSync('userInfo')
+      if (!userInfo || !userInfo.openid) return
+      const db = Taro.cloud.database()
+      // 检查是否已有记录，有则更新时间，没有则新增
+      const existing = await db.collection('history')
+        .where({ openid: userInfo.openid, artwork_id: artwork._id })
+        .limit(1).get()
+      if (existing.data.length > 0) {
+        await db.collection('history').doc(existing.data[0]._id).update({
+          data: { viewed_at: db.serverDate(), view_count: db.command.inc(1) }
+        })
+      } else {
+        await db.collection('history').add({
+          data: {
+            openid: userInfo.openid,
+            artwork_id: artwork._id,
+            title: artwork.title,
+            artist_name: artwork.artist_name,
+            image_url: artwork.image_url,
+            viewed_at: db.serverDate(),
+            view_count: 1,
+          }
+        })
+      }
+    } catch (err) {
+      // 静默失败，不影响主流程
     }
   }
 
