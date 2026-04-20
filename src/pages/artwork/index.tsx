@@ -105,10 +105,10 @@ export default function ArtworkDetail() {
 
   const scaleRef = useRef(1)
   const lastTapRef = useRef(0)
+  const singleTapTimerRef = useRef<any>(null)
   const [scaleValue, setScaleValue] = useState(1)
 
   const onTouchStart = (e: any) => {
-    // 多指触摸（缩放）时不记录滑动起点
     if (e.touches.length > 1) {
       setIsSwiping(false)
       return
@@ -118,39 +118,49 @@ export default function ArtworkDetail() {
   }
 
   const onTouchEnd = (e: any) => {
-    // 多指结束也不触发滑动
     if (e.touches.length > 0 || e.changedTouches.length > 1) {
-      setIsSwiping(false)
-      return
-    }
-    // 缩放状态下不切换画作
-    if (scaleRef.current > 1.05) {
       setIsSwiping(false)
       return
     }
     if (!isSwiping) return
     const deltaX = e.changedTouches[0].clientX - touchStartX
-    if (Math.abs(deltaX) > 50) {
+    if (Math.abs(deltaX) > 50 && scaleRef.current <= 1.05) {
+      // 滑动切换画作
       switchArtwork(deltaX > 0 ? 'prev' : 'next')
+    } else if (Math.abs(deltaX) <= 50 && isFullscreen) {
+      const now = Date.now()
+      if (now - lastTapRef.current < 280) {
+        // 双击：取消单击定时器，执行放大/还原
+        if (singleTapTimerRef.current) {
+          clearTimeout(singleTapTimerRef.current)
+          singleTapTimerRef.current = null
+        }
+        const next = scaleRef.current > 1.05 ? 1 : 2
+        scaleRef.current = next
+        setScaleValue(next)
+      } else {
+        // 单击：延迟280ms等待是否有第二次tap
+        singleTapTimerRef.current = setTimeout(() => {
+          if (scaleRef.current > 1.05) {
+            scaleRef.current = 1
+            setScaleValue(1)
+          } else {
+            exitFullscreen()
+          }
+          singleTapTimerRef.current = null
+        }, 280)
+      }
+      lastTapRef.current = now
     }
     setIsSwiping(false)
   }
 
   const onScaleChange = (e: any) => {
-    const s = e.detail?.scale ?? 1
-    scaleRef.current = s
-    setScaleValue(s)
+    scaleRef.current = e.detail?.scale ?? 1
   }
 
   const onDoubleTap = () => {
-    const now = Date.now()
-    if (now - lastTapRef.current < 300) {
-      // 双击：放大到2倍 或 恢复1倍
-      const next = scaleRef.current > 1.05 ? 1 : 2
-      scaleRef.current = next
-      setScaleValue(next)
-    }
-    lastTapRef.current = now
+    // 由 onTouchEnd 统一处理
   }
 
   const loadArtwork = async (id: string) => {
@@ -309,7 +319,7 @@ export default function ArtworkDetail() {
     )
   }
 
-  // 全屏模式：支持双指缩放 + 左右滑动切换
+  // 全屏模式
   if (isFullscreen) {
     return (
       <View
@@ -325,8 +335,8 @@ export default function ArtworkDetail() {
             scaleMin={1}
             scaleMax={4}
             scaleValue={scaleValue}
-            damping={50}
-            friction={2}
+            damping={40}
+            friction={5}
             onScale={onScaleChange}
             onClick={onDoubleTap}
           >
@@ -337,13 +347,6 @@ export default function ArtworkDetail() {
             />
           </MovableView>
         </MovableArea>
-        {artworkList.length > 1 && (
-          <View className='fullscreen-nav'>
-            <Text className='fullscreen-nav-text'>
-              {currentIndex + 1} / {artworkList.length}
-            </Text>
-          </View>
-        )}
 
       </View>
     )

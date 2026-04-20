@@ -532,19 +532,10 @@ $white: #FFFFFF;
 }
 
 .fullscreen-nav {
-  position: fixed;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,0.5);
-  border-radius: 20px;
-  padding: 6px 16px;
-  z-index: 100;
-  .fullscreen-nav-text {
-    color: #fff;
-    font-size: 26px;
-  }
+  display: none;
 }
+
+// 全屏顶部控制栏
 
 .fullscreen-prev, .fullscreen-next {
   position: fixed;
