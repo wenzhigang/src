@@ -117,6 +117,9 @@ export default function Profile() {
   }
 
   const goToArtwork = (artworkId: string) => {
+    // 传入收藏列表，支持滑动切换
+    const list = favorites.map(f => f.artwork_id)
+    ;(Taro as any)._artworkList = list
     Taro.navigateTo({ url: `/pages/artwork/index?id=${artworkId}` })
   }
 
