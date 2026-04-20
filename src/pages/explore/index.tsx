@@ -1,6 +1,6 @@
 import { View, Text, Image, ScrollView } from '@tarojs/components'
-import { useState, useEffect } from 'react'
-import Taro from '@tarojs/taro'
+import { useState, useEffect, useRef } from 'react'
+import Taro, { useReachBottom } from '@tarojs/taro'
 import './index.scss'
 
 interface Museum {
@@ -56,6 +56,10 @@ export default function Explore() {
   const [searchText, setSearchText] = useState('')
   const [searching, setSearching] = useState(false)
   const [searchResults, setSearchResults] = useState<any[]>([])
+  const [hasMore, setHasMore] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const artworkOffsetRef = useRef(0)
+  const PAGE_SIZE = 50
 
   useEffect(() => {
     // 读取全局 tab 目标
@@ -76,16 +80,11 @@ export default function Explore() {
   const loadData = async () => {
     try {
       const db = Taro.cloud.database()
-      const _ = db.command
-      // 第一批：博物馆、艺术家、画作1-60
-      const [museumsRes, artists1Res, artists2Res, artists3Res, artworks1Res, artworks2Res, artworks3Res] = await Promise.allSettled([
+      const [museumsRes, artists1Res, artists2Res, artists3Res] = await Promise.allSettled([
         db.collection('museums').limit(20).get(),
         db.collection('artists').limit(20).get(),
         db.collection('artists').skip(20).limit(20).get(),
         db.collection('artists').skip(40).limit(20).get(),
-        db.collection('artworks').where({ seq: _.gte(1).and(_.lte(20)) }).limit(20).get(),
-        db.collection('artworks').where({ seq: _.gte(21).and(_.lte(40)) }).limit(20).get(),
-        db.collection('artworks').where({ seq: _.gte(41).and(_.lte(60)) }).limit(20).get(),
       ])
       if (museumsRes.status === 'fulfilled') setMuseums(museumsRes.value.data as Museum[])
       else setMuseums(fallbackMuseums)
@@ -95,36 +94,16 @@ export default function Explore() {
         ...(artists3Res.status === 'fulfilled' ? artists3Res.value.data as Artist[] : []),
       ]
       setArtists(allArtists.length > 0 ? allArtists : fallbackArtists)
-      const batch1 = [
-        ...(artworks1Res.status === 'fulfilled' ? artworks1Res.value.data as Artwork[] : []),
-        ...(artworks2Res.status === 'fulfilled' ? artworks2Res.value.data as Artwork[] : []),
-        ...(artworks3Res.status === 'fulfilled' ? artworks3Res.value.data as Artwork[] : []),
-      ]
-      setArtworks(batch1)
-
-      // 第二批：画作61-190
-      const [artworks4Res, artworks5Res, artworks6Res, artworks7Res] = await Promise.allSettled([
-        db.collection('artworks').where({ seq: _.gte(61).and(_.lte(90)) }).limit(30).get(),
-        db.collection('artworks').where({ seq: _.gte(91).and(_.lte(120)) }).limit(30).get(),
-        db.collection('artworks').where({ seq: _.gte(121).and(_.lte(155)) }).limit(35).get(),
-        db.collection('artworks').where({ seq: _.gte(156).and(_.lte(190)) }).limit(35).get(),
+      // 首批：并发3次各取20条 = 60条
+      const [aw1, aw2, aw3] = await Promise.all([
+        db.collection('artworks').orderBy('seq', 'asc').skip(0).limit(20).get(),
+        db.collection('artworks').orderBy('seq', 'asc').skip(20).limit(20).get(),
+        db.collection('artworks').orderBy('seq', 'asc').skip(40).limit(20).get(),
       ])
-      const allArtworks = [
-        ...batch1,
-        ...(artworks4Res.status === 'fulfilled' ? artworks4Res.value.data as Artwork[] : []),
-        ...(artworks5Res.status === 'fulfilled' ? artworks5Res.value.data as Artwork[] : []),
-        ...(artworks6Res.status === 'fulfilled' ? artworks6Res.value.data as Artwork[] : []),
-        ...(artworks7Res.status === 'fulfilled' ? artworks7Res.value.data as Artwork[] : []),
-      ]
-      // 去重并按seq排序
-      const seen = new Set<string>()
-      const unique = allArtworks.filter(a => {
-        if (seen.has(a._id)) return false
-        seen.add(a._id)
-        return true
-      })
-      unique.sort((a: any, b: any) => (a.seq || 0) - (b.seq || 0))
-      setArtworks(unique)
+      const data = [...aw1.data, ...aw2.data, ...aw3.data] as Artwork[]
+      setArtworks(data)
+      artworkOffsetRef.current = data.length
+      setHasMore(data.length > 0)
     } catch (err) {
       console.error('探索页数据加载失败：', err)
       setMuseums(fallbackMuseums)
@@ -133,6 +112,33 @@ export default function Explore() {
       setLoading(false)
     }
   }
+
+  const loadMoreArtworks = async () => {
+    if (!hasMore || loadingMore) return
+    setLoadingMore(true)
+    try {
+      const db = Taro.cloud.database()
+      const offset = artworkOffsetRef.current
+      const [aw1, aw2, aw3] = await Promise.all([
+        db.collection('artworks').orderBy('seq', 'asc').skip(offset).limit(20).get(),
+        db.collection('artworks').orderBy('seq', 'asc').skip(offset + 20).limit(20).get(),
+        db.collection('artworks').orderBy('seq', 'asc').skip(offset + 40).limit(20).get(),
+      ])
+      const data = [...aw1.data, ...aw2.data, ...aw3.data] as Artwork[]
+      setArtworks(prev => [...prev, ...data])
+      artworkOffsetRef.current = offset + data.length
+      setHasMore(data.length > 0)
+    } catch (err) {
+      console.error('加载更多失败：', err)
+    } finally {
+      setLoadingMore(false)
+    }
+  }
+
+  // 页面触底自动加载更多画作
+  useReachBottom(() => {
+    if (activeTab === 'artwork') loadMoreArtworks()
+  })
 
   // 本地搜索
   const handleSearch = (val: string) => {
@@ -295,7 +301,7 @@ export default function Explore() {
 
           {/* 作品列表 */}
           {!loading && activeTab === 'artwork' && (
-            <ScrollView scrollY className='list-container'>
+            <View className='list-container'>
               <View className='artwork-grid'>
                 {artworks.map(artwork => (
                   <View className='artwork-card' key={artwork._id} onClick={() => goToArtwork(artwork._id, artworks.map(a => a._id))}>
@@ -307,7 +313,9 @@ export default function Explore() {
                   </View>
                 ))}
               </View>
-            </ScrollView>
+              {loadingMore && <View className='load-more-tip'><Text className='load-more-text'>加载更多...</Text></View>}
+              {!hasMore && artworks.length > 0 && <View className='load-more-tip'><Text className='load-more-text'>共 {artworks.length} 幅画作</Text></View>}
+            </View>
           )}
 
           {/* 艺术家列表 */}

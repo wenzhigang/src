@@ -1,5 +1,5 @@
 import { View, Text, Image, ScrollView, MovableArea, MovableView } from '@tarojs/components'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Taro from '@tarojs/taro'
 import './index.scss'
 
@@ -103,18 +103,54 @@ export default function ArtworkDetail() {
     loadArtwork(artworkList[newIndex])
   }
 
+  const scaleRef = useRef(1)
+  const lastTapRef = useRef(0)
+  const [scaleValue, setScaleValue] = useState(1)
+
   const onTouchStart = (e: any) => {
+    // 多指触摸（缩放）时不记录滑动起点
+    if (e.touches.length > 1) {
+      setIsSwiping(false)
+      return
+    }
     setTouchStartX(e.touches[0].clientX)
     setIsSwiping(true)
   }
 
   const onTouchEnd = (e: any) => {
+    // 多指结束也不触发滑动
+    if (e.touches.length > 0 || e.changedTouches.length > 1) {
+      setIsSwiping(false)
+      return
+    }
+    // 缩放状态下不切换画作
+    if (scaleRef.current > 1.05) {
+      setIsSwiping(false)
+      return
+    }
     if (!isSwiping) return
     const deltaX = e.changedTouches[0].clientX - touchStartX
     if (Math.abs(deltaX) > 50) {
       switchArtwork(deltaX > 0 ? 'prev' : 'next')
     }
     setIsSwiping(false)
+  }
+
+  const onScaleChange = (e: any) => {
+    const s = e.detail?.scale ?? 1
+    scaleRef.current = s
+    setScaleValue(s)
+  }
+
+  const onDoubleTap = () => {
+    const now = Date.now()
+    if (now - lastTapRef.current < 300) {
+      // 双击：放大到2倍 或 恢复1倍
+      const next = scaleRef.current > 1.05 ? 1 : 2
+      scaleRef.current = next
+      setScaleValue(next)
+    }
+    lastTapRef.current = now
   }
 
   const loadArtwork = async (id: string) => {
@@ -288,10 +324,11 @@ export default function ArtworkDetail() {
             scale
             scaleMin={1}
             scaleMax={4}
-            scaleValue={1}
+            scaleValue={scaleValue}
             damping={50}
             friction={2}
-            onClick={exitFullscreen}
+            onScale={onScaleChange}
+            onClick={onDoubleTap}
           >
             <Image
               className='fullscreen-image'
