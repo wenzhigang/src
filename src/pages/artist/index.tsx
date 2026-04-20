@@ -154,7 +154,7 @@ export default function ArtistDetail() {
               <View
                 className='artwork-card'
                 key={artwork._id}
-                onClick={() => goToArtwork(artwork._id, artistArtworks.map((a: any) => a._id))}
+                onClick={() => goToArtwork(artwork._id, artworks.map((a: any) => a._id))}
               >
                 <Image className='artwork-image' src={artwork.image_url} mode='aspectFill' />
                 <View className='artwork-info'>
