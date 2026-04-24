@@ -1,6 +1,6 @@
 import { View, Text, Image, ScrollView } from '@tarojs/components'
 import { useState, useEffect, useRef } from 'react'
-import Taro, { useReachBottom } from '@tarojs/taro'
+import Taro, { useDidShow, useReachBottom } from '@tarojs/taro'
 import './index.scss'
 
 interface Museum {
@@ -61,8 +61,7 @@ export default function Explore() {
   const artworkOffsetRef = useRef(0)
   const PAGE_SIZE = 50
 
-  useEffect(() => {
-    // 读取全局 tab 目标
+  useDidShow(() => {
     const target = (Taro as any)._tabTarget
     if (target) {
       const tabMap: Record<string, 'artwork' | 'artist' | 'museum'> = {

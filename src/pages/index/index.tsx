@@ -132,14 +132,7 @@ export default function Index() {
   return (
     <ScrollView className='home' scrollY={true}>
 
-      {/* 顶部导航 */}
-      <View className='header'>
-        <Text className='header-logo'>画说</Text>
-        <View className='header-search' onClick={() => Taro.navigateTo({ url: '/pages/explore/index' })}>
-          <Text className='search-icon'>🔍</Text>
-          <Text className='search-placeholder' onClick={() => Taro.navigateTo({ url: '/pages/explore/index' })}>搜索画作、艺术家...</Text>
-        </View>
-      </View>
+
 
       {/* 艺术家 */}
       {artists.length > 0 && (
