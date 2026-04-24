@@ -3,6 +3,7 @@ export default defineAppConfig({
     'pages/index/index',
     'pages/explore/index',
     'pages/scan/index',
+    'pages/admin/index',
     'pages/profile/index',
     'pages/artwork/index',
     'pages/artist/index',

@@ -1,0 +1,36 @@
+.admin-page { background: #0f0f1a; min-height: 100vh; padding: 16px; }
+.admin-header { padding: 16px 0 24px; }
+.admin-title { display: block; font-size: 22px; font-weight: 600; color: #fff; }
+.admin-sub { display: block; font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+
+.search-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+.search-input { flex: 1; background: rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 14px; }
+.filter-btn { padding: 10px 14px; background: rgba(201,168,76,0.15); border-radius: 8px; }
+.filter-text { color: #c9a84c; font-size: 13px; }
+
+.artwork-list { display: flex; flex-direction: column; gap: 10px; }
+.artwork-row { display: flex; gap: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; padding: 10px; align-items: center; }
+.artwork-thumb { width: 56px; height: 56px; border-radius: 6px; flex-shrink: 0; }
+.artwork-info { flex: 1; min-width: 0; }
+.artwork-name { display: block; font-size: 14px; color: #fff; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.artwork-meta { display: block; font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+.edit-btn { padding: 6px 14px; background: rgba(201,168,76,0.2); border-radius: 6px; border: 1px solid rgba(201,168,76,0.4); }
+.edit-text { color: #c9a84c; font-size: 12px; }
+
+.load-more { text-align: center; padding: 16px 0; }
+.load-more-text { color: rgba(255,255,255,0.3); font-size: 12px; }
+
+/* 编辑弹窗 */
+.modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 100; display: flex; align-items: flex-end; }
+.modal-box { background: #1a1a2e; border-radius: 16px 16px 0 0; padding: 20px 16px 40px; width: 100%; max-height: 85vh; overflow-y: auto; }
+.modal-title { display: block; font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 16px; }
+.field-label { display: block; font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 6px; margin-top: 14px; }
+.field-input { width: 100%; background: rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 14px; box-sizing: border-box; }
+.field-textarea { width: 100%; background: rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 14px; min-height: 100px; box-sizing: border-box; }
+.modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+.btn-cancel { flex: 1; padding: 12px; background: rgba(255,255,255,0.08); border-radius: 8px; text-align: center; }
+.btn-save { flex: 1; padding: 12px; background: #c9a84c; border-radius: 8px; text-align: center; }
+.btn-cancel-text { color: rgba(255,255,255,0.6); font-size: 14px; }
+.btn-save-text { color: #000; font-size: 14px; font-weight: 600; }
+.btn-delete { width: 100%; padding: 12px; background: rgba(220,50,50,0.15); border-radius: 8px; text-align: center; margin-top: 8px; border: 1px solid rgba(220,50,50,0.3); }
+.btn-delete-text { color: #e05555; font-size: 14px; }

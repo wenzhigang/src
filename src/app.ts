@@ -55,15 +55,14 @@ const autoLogin = async () => {
         .get()
 
       if (existRes.data.length > 0) {
-        // 已存在，更新最后登录时间
-        await db.collection('users')
-          .where({ openid })
-          .update({
-            data: {
-              last_login: db.serverDate(),
-            }
-          })
-        console.log('用户已存在，更新登录时间，openid：', openid)
+        // 已存在，更新最后登录时间，同时读取 role
+        await db.collection('users').where({ openid }).update({
+          data: { last_login: db.serverDate() }
+        })
+        const role = existRes.data[0].role || 'user'
+        const stored2 = Taro.getStorageSync('userInfo') || {}
+        Taro.setStorageSync('userInfo', { ...stored2, openid, role })
+        console.log('用户已存在，role：', role)
       } else {
         // 不存在，新建用户记录
         await db.collection('users').add({
@@ -71,10 +70,13 @@ const autoLogin = async () => {
             openid,
             nickname: '',
             avatar_url: '',
+            role: 'user',
             created_at: db.serverDate(),
             last_login: db.serverDate(),
           }
         })
+        const stored2 = Taro.getStorageSync('userInfo') || {}
+        Taro.setStorageSync('userInfo', { ...stored2, openid, role: 'user' })
         console.log('新用户创建成功，openid：', openid)
       }
     }

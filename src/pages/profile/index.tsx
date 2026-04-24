@@ -273,6 +273,13 @@ export default function Profile() {
       <View className='settings-section'>
         <Text className='settings-title'>更多</Text>
         <View className='menu-list'>
+          {userInfo && (Taro.getStorageSync('userInfo') as any)?.role === 'admin' && (
+            <View className='menu-item' onClick={() => Taro.navigateTo({ url: '/pages/admin/index' })}>
+              <Text className='menu-icon'>⚙️</Text>
+              <Text className='menu-text'>管理后台</Text>
+              <Text className='menu-arrow'>›</Text>
+            </View>
+          )}
           <View className='menu-item' onClick={() => Taro.showToast({ title: '功能开发中', icon: 'none' })}>
             <Text className='menu-icon'>⭐</Text><Text className='menu-text'>升级会员</Text><Text className='menu-arrow'>›</Text>
           </View>
