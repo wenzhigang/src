@@ -135,9 +135,9 @@ export default function Index() {
       {/* 顶部导航 */}
       <View className='header'>
         <Text className='header-logo'>画说</Text>
-        <View className='header-search'>
+        <View className='header-search' onClick={() => Taro.navigateTo({ url: '/pages/explore/index' })}>
           <Text className='search-icon'>🔍</Text>
-          <Text className='search-placeholder'>搜索画作、艺术家...</Text>
+          <Text className='search-placeholder' onClick={() => Taro.navigateTo({ url: '/pages/explore/index' })}>搜索画作、艺术家...</Text>
         </View>
       </View>
 

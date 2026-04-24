@@ -114,7 +114,7 @@ export default function Profile() {
       const { nickName, avatarUrl } = profileRes.userInfo
       const stored = Taro.getStorageSync('userInfo')
       if (!stored || !stored.openid) { Taro.showToast({ title: '请稍后再试', icon: 'none' }); return }
-      const newUserInfo: UserInfo = { openid: stored.openid, nickname: nickName, avatarUrl, loginTime: stored.loginTime }
+      const newUserInfo: UserInfo = { openid: stored.openid, nickname: nickName, avatarUrl, loginTime: stored.loginTime, role: stored.role }
       Taro.setStorageSync('userInfo', newUserInfo)
       setUserInfo(newUserInfo)
       const db = Taro.cloud.database()

@@ -140,8 +140,8 @@ export default function Explore() {
     if (activeTab === 'artwork') loadMoreArtworks()
   })
 
-  // 本地搜索
-  const handleSearch = (val: string) => {
+  // 云端搜索（画作名、艺术家名、博物馆名）
+  const handleSearch = async (val: string) => {
     setSearchText(val)
     if (!val.trim()) {
       setSearching(false)
@@ -149,37 +149,36 @@ export default function Explore() {
       return
     }
     setSearching(true)
-    const keyword = val.trim().toLowerCase()
-    const results: any[] = []
-
-    artworks.forEach(a => {
-      if (
-        a.title.toLowerCase().includes(keyword) ||
-        a.artist_name.toLowerCase().includes(keyword) ||
-        (a.style && a.style.toLowerCase().includes(keyword))
-      ) {
-        results.push({ ...a, type: 'artwork' })
+    const keyword = val.trim()
+    const kl = keyword.toLowerCase()
+    try {
+      const db = Taro.cloud.database()
+      const re = db.RegExp({ regexp: keyword, flags: 'i' })
+      const [r1, r2] = await Promise.allSettled([
+        db.collection('artworks').where({ title: re }).limit(30).get(),
+        db.collection('artworks').where({ artist_name: re }).limit(30).get(),
+      ])
+      const seen = new Set<string>()
+      const artworkResults: any[] = []
+      for (const r of [r1, r2]) {
+        if (r.status === 'fulfilled') {
+          for (const a of r.value.data) {
+            if (!seen.has(a._id)) { seen.add(a._id); artworkResults.push({ ...a, _type: 'artwork' }) }
+          }
+        }
       }
-    })
-    artists.forEach(a => {
-      if (
-        a.name.toLowerCase().includes(keyword) ||
-        a.name_en.toLowerCase().includes(keyword) ||
-        (a.style && a.style.toLowerCase().includes(keyword))
-      ) {
-        results.push({ ...a, type: 'artist' })
-      }
-    })
-    museums.forEach(m => {
-      if (
-        m.name.toLowerCase().includes(keyword) ||
-        m.name_en.toLowerCase().includes(keyword) ||
-        m.city.toLowerCase().includes(keyword)
-      ) {
-        results.push({ ...m, type: 'museum' })
-      }
-    })
-    setSearchResults(results)
+      const artistResults = artists
+        .filter(a => a.name.toLowerCase().includes(kl) || (a.name_en && a.name_en.toLowerCase().includes(kl)))
+        .map(a => ({ ...a, _type: 'artist' }))
+      const museumResults = museums
+        .filter(m => m.name.toLowerCase().includes(kl) || (m.name_en && m.name_en.toLowerCase().includes(kl)))
+        .map(m => ({ ...m, _type: 'museum' }))
+      setSearchResults([...artworkResults, ...artistResults, ...museumResults])
+    } catch (e) {
+      Taro.showToast({ title: '搜索失败', icon: 'none' })
+    } finally {
+      setSearching(false)
+    }
   }
 
   const goToArtwork = (id: string, list?: string[]) => {
@@ -221,7 +220,7 @@ export default function Explore() {
       </View>
 
       {/* 搜索结果 */}
-      {searching && (
+      {searchText.trim().length > 0 && (
         <ScrollView scrollY className='list-container'>
           {searchResults.length === 0 ? (
             <View className='empty-state'>
@@ -229,7 +228,7 @@ export default function Explore() {
             </View>
           ) : (
             searchResults.map(item => {
-              if (item.type === 'artwork') {
+              if (item._type === 'artwork') {
                 return (
                   <View className='search-item' key={item._id} onClick={() => goToArtwork(item._id)}>
                     <Image className='search-thumb' src={item.image_url} mode='aspectFill' />
@@ -241,7 +240,7 @@ export default function Explore() {
                   </View>
                 )
               }
-              if (item.type === 'artist') {
+              if (item._type === 'artist') {
                 return (
                   <View className='search-item' key={item._id} onClick={() => goToArtist(item._id)}>
                     <Image className='search-thumb' src={item.avatar_url} mode='aspectFill' />
@@ -269,7 +268,7 @@ export default function Explore() {
       )}
 
       {/* 正常浏览模式 */}
-      {!searching && (
+      {!searchText.trim() && (
         <>
           {/* 切换标签 */}
           <View className='tabs'>

@@ -10,7 +10,7 @@
 
 .artwork-list { display: flex; flex-direction: column; gap: 10px; }
 .artwork-row { display: flex; gap: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; padding: 10px; align-items: center; }
-.artwork-thumb { width: 56px; height: 56px; border-radius: 6px; flex-shrink: 0; }
+.artwork-thumb { width: 56px; height: 56px; border-radius: 6px; flex-shrink: 0; cursor: pointer; }
 .artwork-info { flex: 1; min-width: 0; }
 .artwork-name { display: block; font-size: 14px; color: #fff; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .artwork-meta { display: block; font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 2px; }

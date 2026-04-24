@@ -26,7 +26,7 @@ const autoLogin = async () => {
   try {
     // 检查本地是否已有登录信息，且未过期（7天内）
     const userInfo = Taro.getStorageSync('userInfo')
-    if (userInfo && userInfo.openid) {
+    if (userInfo && userInfo.openid && userInfo.role) {
       const sevenDays = 7 * 24 * 60 * 60 * 1000
       if (Date.now() - userInfo.loginTime < sevenDays) {
         console.log('已有有效登录信息，openid：', userInfo.openid)

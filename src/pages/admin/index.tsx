@@ -23,6 +23,8 @@ export default function Admin() {
   const [loading, setLoading] = useState(false)
   const [keyword, setKeyword] = useState('')
   const offsetRef = useRef(0)
+  const scrollTopRef = useRef(0)
+  const initialLoadedRef = useRef(false)
   const [hasMore, setHasMore] = useState(true)
   const [editing, setEditing] = useState<Artwork | null>(null)
   const [saving, setSaving] = useState(false)
@@ -34,7 +36,10 @@ export default function Admin() {
       Taro.navigateBack()
       return
     }
-    loadArtworks(true)
+    if (!initialLoadedRef.current) {
+      initialLoadedRef.current = true
+      loadArtworks(true)
+    }
   })
 
   const loadArtworks = async (reset = false) => {
@@ -85,18 +90,26 @@ export default function Admin() {
     if (!editing) return
     setSaving(true)
     try {
-      const db = Taro.cloud.database()
-      await db.collection('artworks').doc(editing._id).update({
+      const res = await Taro.cloud.callFunction({
+        name: 'manageArtwork',
         data: {
-          title:       editing.title,
-          artist_name: editing.artist_name,
-          year:        editing.year,
-          medium:      editing.medium,
-          size:        editing.size,
-          description: editing.description,
-          tags:        editing.tags,
+          action: 'update',
+          id: editing._id,
+          data: {
+            title:       editing.title,
+            artist_name: editing.artist_name,
+            year:        editing.year,
+            medium:      editing.medium,
+            size:        editing.size,
+            description: editing.description,
+            tags:        editing.tags,
+          }
         }
-      })
+      }) as any
+      if (!res.result || !res.result.success) {
+        Taro.showToast({ title: res.result?.error || '保存失败', icon: 'none' })
+        return
+      }
       setArtworks(prev => prev.map(a => a._id === editing._id ? { ...a, ...editing } : a))
       Taro.showToast({ title: '保存成功', icon: 'success' })
       setEditing(null)
@@ -109,12 +122,18 @@ export default function Admin() {
     Taro.showModal({ title: '确认删除', content: `删除《${editing.title}》？此操作不可恢复`, success: async ({ confirm }) => {
       if (!confirm) return
       try {
-        const db = Taro.cloud.database()
-        await db.collection('artworks').doc(editing._id).remove()
-        setArtworks(prev => prev.filter(a => a._id !== editing._id))
-        Taro.showToast({ title: '已删除', icon: 'success' })
-        setEditing(null)
-      } catch { Taro.showToast({ title: '删除失败', icon: 'none' }) }
+        const res = await Taro.cloud.callFunction({
+          name: 'manageArtwork',
+          data: { action: 'delete', id: editing._id }
+        }) as any
+        if (res.result && res.result.success) {
+          setArtworks(prev => prev.filter(a => a._id !== editing._id))
+          Taro.showToast({ title: '已删除', icon: 'success' })
+          setEditing(null)
+        } else {
+          Taro.showToast({ title: res.result?.error || '删除失败', icon: 'none' })
+        }
+      } catch (e) { Taro.showToast({ title: '删除失败', icon: 'none' }) }
     }})
   }
 
@@ -135,12 +154,12 @@ export default function Admin() {
         </View>
       </View>
 
-      <ScrollView scrollY className='artwork-list' style='height:calc(100vh - 160px)' onScrollToLower={() => loadArtworks()}>
+      <ScrollView scrollY className='artwork-list' style='height:calc(100vh - 160px)' scrollTop={scrollTopRef.current} onScroll={e => { scrollTopRef.current = e.detail.scrollTop }} onScrollToLower={() => loadArtworks()}>
         {artworks.map(a => (
           <View className='artwork-row' key={a._id}>
-            <Image className='artwork-thumb' src={a.image_url} mode='aspectFill' />
+            <Image className='artwork-thumb' src={a.image_url} mode='aspectFill' onClick={() => Taro.navigateTo({ url: `/pages/artwork/index?id=${a._id}` })} />
             <View className='artwork-info'>
-              <Text className='artwork-name'>{a.title}</Text>
+              <Text className='artwork-name' onClick={() => Taro.navigateTo({ url: `/pages/artwork/index?id=${a._id}` })}>{a.title}</Text>
               <Text className='artwork-meta'>{a.artist_name} · {a.style}代 · {a.year || '年代不详'}</Text>
             </View>
             <View className='edit-btn' onClick={() => openEdit(a)}>
