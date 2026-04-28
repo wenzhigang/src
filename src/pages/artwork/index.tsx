@@ -431,7 +431,7 @@ export default function ArtworkDetail() {
           )}
 
           <View className='description-section'>
-            <Text className='section-title'>📖 画作故事</Text>
+            <Text className='section-title'>📖 介绍</Text>
             <Text className='description'>
               {showFullDesc
                 ? artwork.description
@@ -445,34 +445,6 @@ export default function ArtworkDetail() {
             </Text>
           </View>
 
-          {/* AI 鉴赏分析 */}
-          {artwork.ai_analysis && (
-            <View className='ai-section'>
-              <View className='ai-section-header'>
-                <Text className='ai-section-title'>🤖 AI 鉴赏</Text>
-                <Text className='ai-section-sub'>由 AI 生成，仅供参考</Text>
-              </View>
-              <View className='ai-tabs'>
-                {([
-                  { key: 'technique', label: '技法' },
-                  { key: 'composition', label: '构图' },
-                  { key: 'emotion', label: '情感' },
-                  { key: 'influence', label: '影响' },
-                ] as const).map(tab => (
-                  <View
-                    key={tab.key}
-                    className={`ai-tab ${activeAiTab === tab.key ? 'active' : ''}`}
-                    onClick={() => setActiveAiTab(tab.key)}
-                  >
-                    <Text className='ai-tab-text'>{tab.label}</Text>
-                  </View>
-                ))}
-              </View>
-              <Text className='ai-content'>
-                {artwork.ai_analysis[activeAiTab]}
-              </Text>
-            </View>
-          )}
 
           <View className='artist-link-row'>
             <Text className='artist-link-text'>了解更多关于 {artwork.artist_name} →</Text>

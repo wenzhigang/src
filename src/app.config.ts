@@ -2,7 +2,6 @@ export default defineAppConfig({
   pages: [
     'pages/index/index',
     'pages/explore/index',
-    'pages/scan/index',
     'pages/admin/index',
     'pages/profile/index',
     'pages/artwork/index',
@@ -24,7 +23,6 @@ export default defineAppConfig({
     list: [
       { pagePath: 'pages/index/index', text: '首页' },
       { pagePath: 'pages/explore/index', text: '探索' },
-      { pagePath: 'pages/scan/index', text: '拍照' },
       { pagePath: 'pages/profile/index', text: '我的' },
     ],
   },
