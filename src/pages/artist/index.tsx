@@ -49,12 +49,22 @@ export default function ArtistDetail() {
       setArtist(artistData)
       Taro.setNavigationBarTitle({ title: artistData.name })
 
-      // 获取该艺术家的画作（通过 artist_name 匹配）
-      const artworksRes = await db.collection('artworks')
-        .where({ artist_name: artistData.name })
-        .limit(20)
-        .get()
-      setArtworks(artworksRes.data as Artwork[])
+      // 获取该艺术家的画作（通过 artist_name 匹配，分批加载全部）
+      const allArtworks: any[] = []
+      let skip = 0
+      while (true) {
+        const res = await db.collection('artworks')
+          .where({ artist_name: artistData.name })
+          .orderBy('seq', 'asc')
+          .skip(skip)
+          .limit(20)
+          .get()
+        allArtworks.push(...res.data)
+        if (res.data.length < 20) break
+        skip += 20
+      }
+      console.log('作品总数:', allArtworks.length, '艺术家:', artistData.name)
+      setArtworks(allArtworks as Artwork[])
 
       // 获取同风格艺术家（最多3位，排除自己）
       try {
