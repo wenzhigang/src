@@ -51,6 +51,7 @@ export default function Explore() {
   const [activeTab, setActiveTab] = useState<'artwork' | 'artist' | 'museum'>('artwork')
   const [museums, setMuseums] = useState<Museum[]>([])
   const [artists, setArtists] = useState<Artist[]>([])
+  const [artistsLoaded, setArtistsLoaded] = useState(false)
   const [artworks, setArtworks] = useState<Artwork[]>([])
   const [loading, setLoading] = useState(true)
   const [searchText, setSearchText] = useState('')
@@ -79,20 +80,13 @@ export default function Explore() {
   const loadData = async () => {
     try {
       const db = Taro.cloud.database()
-      const [museumsRes, artists1Res, artists2Res, artists3Res] = await Promise.allSettled([
-        db.collection('museums').limit(20).get(),
-        db.collection('artists').limit(20).get(),
-        db.collection('artists').skip(20).limit(20).get(),
-        db.collection('artists').skip(40).limit(20).get(),
-      ])
-      if (museumsRes.status === 'fulfilled') setMuseums(museumsRes.value.data as Museum[])
-      else setMuseums(fallbackMuseums)
-      const allArtists = [
-        ...(artists1Res.status === 'fulfilled' ? artists1Res.value.data as Artist[] : []),
-        ...(artists2Res.status === 'fulfilled' ? artists2Res.value.data as Artist[] : []),
-        ...(artists3Res.status === 'fulfilled' ? artists3Res.value.data as Artist[] : []),
-      ]
-      setArtists(allArtists.length > 0 ? allArtists : fallbackArtists)
+      // 加载博物馆
+      try {
+        const museumsRes = await db.collection('museums').limit(20).get()
+        setMuseums(museumsRes.data as Museum[])
+      } catch { setMuseums(fallbackMuseums) }
+
+      // 艺术家数据按需加载（切换tab时触发）
       // 首批：并发3次各取20条 = 60条
       const [aw1, aw2, aw3] = await Promise.all([
         db.collection('artworks').orderBy('seq', 'asc').skip(0).limit(20).get(),
@@ -110,6 +104,16 @@ export default function Explore() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const loadArtists = async () => {
+    if (artistsLoaded) return
+    try {
+      const res = await Taro.cloud.callFunction({ name: 'getArtists' }) as any
+      const data = res.result?.data || []
+      setArtists(data.length > 0 ? data : fallbackArtists)
+      setArtistsLoaded(true)
+    } catch(e) { console.error('加载艺术家失败', e) }
   }
 
   const loadMoreArtworks = async () => {
@@ -153,26 +157,43 @@ export default function Explore() {
     try {
       const db = Taro.cloud.database()
       const re = db.RegExp({ regexp: keyword, flags: 'i' })
-      const [r1, r2] = await Promise.allSettled([
-        db.collection('artworks').where({ title: re }).limit(30).get(),
-        db.collection('artworks').where({ artist_name: re }).limit(30).get(),
-      ])
-      const seen = new Set<string>()
-      const artworkResults: any[] = []
-      for (const r of [r1, r2]) {
-        if (r.status === 'fulfilled') {
-          for (const a of r.value.data) {
-            if (!seen.has(a._id)) { seen.add(a._id); artworkResults.push({ ...a, _type: 'artwork' }) }
+      let results: any[] = []
+
+      if (activeTab === 'artwork') {
+        // 只搜作品
+        const [r1, r2] = await Promise.allSettled([
+          db.collection('artworks').where({ title: re }).limit(30).get(),
+          db.collection('artworks').where({ artist_name: re }).limit(30).get(),
+        ])
+        const seen = new Set<string>()
+        for (const r of [r1, r2]) {
+          if (r.status === 'fulfilled') {
+            for (const a of r.value.data) {
+              if (!seen.has(a._id)) { seen.add(a._id); results.push({ ...a, _type: 'artwork' }) }
+            }
           }
         }
+      } else if (activeTab === 'artist') {
+        // 只搜艺术家
+        const [ar1, ar2] = await Promise.allSettled([
+          db.collection('artists').where({ name: re }).limit(30).get(),
+          db.collection('artists').where({ name_en: re }).limit(20).get(),
+        ])
+        const seen = new Set<string>()
+        for (const r of [ar1, ar2]) {
+          if (r.status === 'fulfilled') {
+            for (const a of r.value.data) {
+              if (!seen.has(a._id)) { seen.add(a._id); results.push({ ...a, _type: 'artist' }) }
+            }
+          }
+        }
+      } else if (activeTab === 'museum') {
+        // 只搜博物馆
+        results = museums
+          .filter(m => m.name.toLowerCase().includes(kl) || (m.name_en && m.name_en.toLowerCase().includes(kl)))
+          .map(m => ({ ...m, _type: 'museum' }))
       }
-      const artistResults = artists
-        .filter(a => a.name.toLowerCase().includes(kl) || (a.name_en && a.name_en.toLowerCase().includes(kl)))
-        .map(a => ({ ...a, _type: 'artist' }))
-      const museumResults = museums
-        .filter(m => m.name.toLowerCase().includes(kl) || (m.name_en && m.name_en.toLowerCase().includes(kl)))
-        .map(m => ({ ...m, _type: 'museum' }))
-      setSearchResults([...artworkResults, ...artistResults, ...museumResults])
+      setSearchResults(results)
     } catch (e) {
       Taro.showToast({ title: '搜索失败', icon: 'none' })
     } finally {
@@ -279,7 +300,7 @@ export default function Explore() {
             </View>
             <View
               className={`tab-item ${activeTab === 'artist' ? 'active' : ''}`}
-              onClick={() => setActiveTab('artist')}
+              onClick={() => { setActiveTab('artist'); loadArtists() }}
             >
               <Text className='tab-text'>艺术家</Text>
             </View>

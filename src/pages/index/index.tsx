@@ -37,7 +37,7 @@ export default function Index() {
       setHasMore(data.length === 20)
       if (reset) {
         try {
-          const ar = await Taro.cloud.callFunction({ name: 'getArtworks', data: { skip: 0, limit: 20, type: 'artists' } }) as any
+          const ar = await Taro.cloud.callFunction({ name: 'getArtists' }) as any
           setArtists(ar.result?.data || [])
         } catch {}
         try {
