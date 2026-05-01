@@ -292,6 +292,9 @@ export default function Profile() {
           <View className='menu-item' onClick={() => Taro.showToast({ title: '画说 v1.0.0', icon: 'none' })}>
             <Text className='menu-icon'>ℹ️</Text><Text className='menu-text'>关于画说</Text><Text className='menu-arrow'>›</Text>
           </View>
+           <View className='menu-item' onClick={() => Taro.navigateTo({ url: '/pages/privacy/index' })}>
+             <Text className='menu-icon'>🔒</Text><Text className='menu-text'>隐私政策</Text><Text className='menu-arrow'>›</Text>
+           </View>
         </View>
       </View>
 

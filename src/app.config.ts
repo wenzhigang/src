@@ -7,6 +7,7 @@ export default defineAppConfig({
     'pages/artwork/index',
     'pages/artist/index',
     'pages/museum/index',
+    'pages/privacy/index',
   ],
   window: {
     backgroundTextStyle: 'light',
@@ -21,9 +22,9 @@ export default defineAppConfig({
     backgroundColor: '#FFFFFF',
     borderStyle: 'white',
     list: [
-      { pagePath: 'pages/index/index', text: '首页' },
-      { pagePath: 'pages/explore/index', text: '探索' },
-      { pagePath: 'pages/profile/index', text: '我的' },
+      { pagePath: 'pages/index/index', text: '首页', iconPath: 'assets/images/tabbar/home_normal.png', selectedIconPath: 'assets/images/tabbar/home_active.png' },
+      { pagePath: 'pages/explore/index', text: '探索', iconPath: 'assets/images/tabbar/explore_normal.png', selectedIconPath: 'assets/images/tabbar/explore_active.png' },
+      { pagePath: 'pages/profile/index', text: '我的', iconPath: 'assets/images/tabbar/profile_normal.png', selectedIconPath: 'assets/images/tabbar/profile_active.png' },
     ],
   },
 })
