@@ -35,7 +35,8 @@
 .divider { height: 1px; background: #f0f0f0; margin: 4px 0 20px; }
 .desc-section { padding-bottom: 16px; }
 .desc-title { display: block; font-size: 22px; font-weight: 600; color: #1a1a1a; margin-bottom: 14px; }
-.desc-text { display: block; font-size: 19px; color: #333; line-height: 1.9; }
+.desc-text { display: block; font-size: 19px; color: #333; line-height: 2.1; margin-bottom: 28px; text-indent: 2em; letter-spacing: 0.03em; }
+.desc-heading { display: block; font-size: 18px; font-weight: 600; color: #1a1a1a; margin-top: 8px; margin-bottom: 12px; padding-left: 10px; border-left: 3px solid #c9a84c; }
 .read-more { display: block; font-size: 16px; color: #ff2442; margin-top: 12px; }
 .bottom-space { height: 60px; }
 

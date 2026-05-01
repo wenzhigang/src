@@ -28,6 +28,7 @@ export default function ArtworkDetail() {
   const [artworkList, setArtworkList] = useState<string[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [touchStartX, setTouchStartX] = useState(0)
+  const [touchStartY, setTouchStartY] = useState(0)
 
   useEffect(() => {
     const params = ((Taro.getCurrentInstance() || {}).router || {}).params
@@ -145,18 +146,35 @@ export default function ArtworkDetail() {
     <View className='loading-wrap'><Text className='loading-text'>画作不存在</Text></View>
   )
 
-  const desc = artwork.description || ''
+  const rawDesc = artwork.description || ''
+  const desc = rawDesc
+    .replace(/#{1,6}\s+[^\n]*/g, '')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/^\s*[-*+]\s+/gm, '')
+    .replace(/^\s*\d+\.\s+/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
 
   return (
     <View className='page-wrap'>
     <ScrollView scrollY className='page'>
       <View
-        onTouchStart={onTouchStart}
+        onTouchStart={(e: any) => {
+          setTouchStartX(e.touches[0].clientX)
+          setTouchStartY(e.touches[0].clientY)
+        }}
         onTouchEnd={(e: any) => {
-          const delta = e.changedTouches[0].clientX - touchStartX
-          if (Math.abs(delta) > 60) {
-            switchArtwork(delta > 0 ? 'prev' : 'next')
-          } else {
+          const deltaX = e.changedTouches[0].clientX - touchStartX
+          const deltaY = e.changedTouches[0].clientY - touchStartY
+          // 垂直滑动距离大于水平，说明用户在上下滚动，不触发任何操作
+          if (Math.abs(deltaY) > Math.abs(deltaX)) return
+          // 水平滑动超过60px，切换画作
+          if (Math.abs(deltaX) > 60) {
+            switchArtwork(deltaX > 0 ? 'prev' : 'next')
+          } else if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
+            // 几乎没有移动，才算点击，触发全屏
             Taro.previewImage({ current: artwork.image_url, urls: [artwork.image_url] })
           }
         }}
@@ -192,7 +210,9 @@ export default function ArtworkDetail() {
         <View className='divider' />
         <View className='desc-section'>
           <Text className='desc-title'>📖 介绍</Text>
-          <Text className='desc-text'>{desc}</Text>
+          {desc.split('\n').filter((p: string) => p.trim()).map((para: string, i: number) => (
+            <Text key={i} className='desc-text'>{para.trim()}</Text>
+          ))}
         </View>
       </View>
       <View className='bottom-space' />

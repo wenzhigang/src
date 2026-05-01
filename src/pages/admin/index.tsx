@@ -193,22 +193,13 @@ export default function Admin() {
       setCorrectionHasMore(batch.length === 100)
 
       if (page === 0) {
-        // 用云函数获取精确总数
-        try {
-          const countBatches: any[] = []
-          let cskip = 0
-          while (true) {
-            const cr = await Taro.cloud.callFunction({
-              name: 'getCorrections',
-              data: { skip: cskip, limit: 100, statusFilter: ['pending', 'updated'] }
-            }) as any
-            countBatches.push(...(cr.result?.data || []))
-            if ((cr.result?.data || []).length < 100) break
-            cskip += 100
-            if (cskip >= 5000) break
-          }
-          setPendingCount(countBatches.length)
-        } catch { setPendingCount(batch.length) }
+        // 异步获取精确总数
+        Taro.cloud.callFunction({
+          name: 'getCorrections',
+          data: { countOnly: true, statusFilter: ['pending', 'updated'] }
+        }).then((cr: any) => {
+          setPendingCount(cr.result?.total || batch.length)
+        }).catch(() => setPendingCount(batch.length))
       }
 
       // 已确认最近10条
@@ -241,48 +232,144 @@ export default function Admin() {
         data: { artwork_id: aid, title: item.title, artist_name: item.artist_name }
       }) as any
       if (res.result?.success) {
+        const desc = res.result.description
+        // 直接写入 artworks，标记 reviewed
+        await Taro.cloud.callFunction({
+          name: 'confirmDescription',
+          data: { artwork_id: aid, description: desc }
+        })
+        // 更新 corrections 状态为 confirmed
         const db = Taro.cloud.database()
         await db.collection('corrections').where({ artwork_id: aid })
-          .update({ data: { status: 'updated', new_description: res.result.description, updated_at: db.serverDate() } })
-        // 直接更新本地 correctionList，不重新加载全部
-        setCorrectionList(prev => prev.map((item: any) =>
-          item.artwork_id === aid
-            ? { ...item, status: 'updated', new_description: res.result.description }
-            : item
+          .update({ data: { status: 'confirmed', new_description: desc, updated_at: db.serverDate() } })
+        // 更新本地列表
+        setCorrectionList(prev => prev.map((it: any) =>
+          it.artwork_id === aid
+            ? { ...it, status: 'confirmed', new_description: desc }
+            : it
         ))
+        setCorrections(prev => { const s = new Set(prev); s.delete(aid); return s })
       } else {
-        Taro.showToast({ title: '更新失败', icon: 'none' })
+        console.error('修复失败:', aid, res.result?.error)
       }
-    } catch { Taro.showToast({ title: '更新失败', icon: 'none' }) }
+    } catch(e) { console.error('修复异常:', aid, e) }
     setRefreshingIds(prev => { const s = new Set(prev); s.delete(aid); return s })
   }
-
   const refreshAll = async () => {
-    const pending = correctionList.filter((item: any) => item.status === 'pending')
-    if (pending.length === 0) { Taro.showToast({ title: '没有待处理项', icon: 'none' }); return }
-    // 先获取真实总数
-    const totalRes = await Taro.cloud.callFunction({
-      name: 'getCorrections',
-      data: { skip: 0, limit: 1, statusFilter: ['pending'] }
-    }) as any
-    const realTotal = pendingCount > 0 ? pendingCount : pending.length
-    setRefreshAllProgress({ running: true, done: 0, total: realTotal })
-    setDoneIds(new Set())
-    let done = 0
-    for (const item of pending) {
-      await refreshWithDeepseek(item)
-      done++
-      setDoneIds(prev => new Set(prev).add(item.artwork_id))
-      setRefreshAllProgress({ running: true, done, total: pending.length })
+    // 获取全部待处理记录
+    Taro.showToast({ title: '加载待处理列表...', icon: 'loading', duration: 10000 })
+    const allPending: any[] = []
+    let skip = 0
+    while (true) {
+      const res = await Taro.cloud.callFunction({
+        name: 'getCorrections',
+        data: { skip, limit: 100, statusFilter: ['pending'] }
+      }) as any
+      const batch = res.result?.data || []
+      allPending.push(...batch)
+      if (batch.length < 100) break
+      skip += 100
+      if (skip >= 5000) break
     }
-    setRefreshAllProgress({ running: false, done, total: pending.length })
-    // 完成后延迟2秒清除进度
+    Taro.hideToast()
+
+    if (allPending.length === 0) {
+      Taro.showToast({ title: '没有待处理项', icon: 'none' })
+      return
+    }
+
+    const total = allPending.length
+    setPendingCount(total)
+    setRefreshAllProgress({ running: true, done: 0, total })
+    setDoneIds(new Set())
+
+    // 并发处理，每次3条同时进行，失败最多重试3次
+    const CONCURRENCY = 3
+    const MAX_RETRY = 3
+    let done = 0
+    const failed: any[] = []
+
+    const processOne = async (item: any, attempt = 1): Promise<void> => {
+      try {
+        const res = await Taro.cloud.callFunction({
+          name: 'refreshDescription',
+          data: { artwork_id: item.artwork_id, title: item.title, artist_name: item.artist_name }
+        }) as any
+        if (res.result?.success) {
+          const desc = res.result.description
+          await Taro.cloud.callFunction({
+            name: 'confirmDescription',
+            data: { artwork_id: item.artwork_id, description: desc }
+          })
+          const db = Taro.cloud.database()
+          await db.collection('corrections').where({ artwork_id: item.artwork_id })
+            .update({ data: { status: 'confirmed', new_description: desc, updated_at: db.serverDate() } })
+          setCorrectionList(prev => prev.map((it: any) =>
+            it.artwork_id === item.artwork_id
+              ? { ...it, status: 'confirmed', new_description: desc }
+              : it
+          ))
+          setCorrections(prev => { const s = new Set(prev); s.delete(item.artwork_id); return s })
+          setDoneIds(prev => new Set(prev).add(item.artwork_id))
+          done++
+          setRefreshAllProgress({ running: true, done, total })
+        } else {
+          // API返回失败，重试
+          if (attempt < MAX_RETRY) {
+            await new Promise(r => setTimeout(r, 2000 * attempt))
+            return processOne(item, attempt + 1)
+          } else {
+            failed.push(item)
+            console.error('修复失败(已重试):', item.artwork_id, res.result?.error)
+            done++
+            setRefreshAllProgress({ running: true, done, total })
+          }
+        }
+      } catch(e) {
+        if (attempt < MAX_RETRY) {
+          await new Promise(r => setTimeout(r, 2000 * attempt))
+          return processOne(item, attempt + 1)
+        } else {
+          failed.push(item)
+          console.error('修复异常(已重试):', item.artwork_id, e)
+          done++
+          setRefreshAllProgress({ running: true, done, total })
+        }
+      }
+    }
+
+    // 分批并发执行
+    for (let i = 0; i < allPending.length; i += CONCURRENCY) {
+      const batch = allPending.slice(i, i + CONCURRENCY)
+      await Promise.all(batch.map(item => processOne(item)))
+      // 每批完成后保存进度
+      Taro.cloud.callFunction({
+        name: 'manageSettings',
+        data: { action: 'set_progress', done, total, last_artwork_id: batch[batch.length-1]?.artwork_id }
+      }).catch(() => {})
+    }
+
+    // 对失败的再做一轮串行重试
+    if (failed.length > 0) {
+      Taro.showToast({ title: `重试 ${failed.length} 条失败项...`, icon: 'none', duration: 3000 })
+      for (const item of failed) {
+        await processOne(item, 1)
+      }
+    }
+
+    setRefreshAllProgress({ running: false, done, total })
+    const failCount = failed.filter(f => !doneIds.has(f.artwork_id)).length
+    Taro.showToast({
+      title: failCount > 0 ? `完成，${failCount} 条失败` : '全部修复完成！',
+      icon: failCount > 0 ? 'none' : 'success',
+      duration: 4000
+    })
     setTimeout(() => {
       setRefreshAllProgress({ running: false, done: 0, total: 0 })
       setDoneIds(new Set())
-    }, 3000)
+      loadCorrections(0)
+    }, 4000)
   }
-
   const confirmAll = async () => {
     const updated = correctionList.filter((item: any) => item.status === 'updated' && item.new_description)
     if (updated.length === 0) { Taro.showToast({ title: '没有待确认项', icon: 'none' }); return }
@@ -614,27 +701,37 @@ export default function Admin() {
               <View className='correction-history'>
                 <View style='display:flex;justify-content:space-between;align-items:center;padding:10px 12px 6px'>
                   <Text style='font-size:12px;color:#666'>历史记录（{correctionList.filter((r: any) => r.status === 'confirmed').length} 条已确认）</Text>
-                  <Text style='font-size:12px;color:#e05555' onClick={async () => {
-                    const db = Taro.cloud.database()
+                  <Text style='font-size:12px;color:#e05555' onClick={async (e: any) => {
+                    e.stopPropagation()
                     const confirmed = correctionList.filter((r: any) => r.status === 'confirmed')
-                    for (const item of confirmed) {
-                      await db.collection('corrections').doc(item._id).remove()
-                    }
-                    await loadCorrections()
-                    Taro.showToast({ title: '已全部删除', icon: 'success' })
+                    if (confirmed.length === 0) return
+                    try {
+                      const res = await Taro.cloud.callFunction({
+                        name: 'deleteAllCorrections',
+                        data: { statusFilter: ['confirmed'] }
+                      }) as any
+                      if (res.result?.success) {
+                        await loadCorrections(0)
+                        Taro.showToast({ title: `已删除 ${res.result.deleted} 条`, icon: 'success' })
+                      }
+                    } catch { Taro.showToast({ title: '删除失败', icon: 'none' }) }
                   }}>全部删除</Text>
                 </View>
                 {correctionList.filter((item: any) => item.status === 'confirmed').map((item: any) => (
-                  <View key={item._id} className='correction-history-item'>
+                  <View key={item._id} className='correction-history-item' onClick={() => Taro.navigateTo({ url: `/pages/artwork/index?id=${item.artwork_id}` })}>
                     <Image style='width:36px;height:36px;border-radius:4px;flex-shrink:0' src={item.image_url} mode='aspectFill' />
                     <View style='flex:1'>
                       <Text style='display:block;font-size:13px;color:#ccc'>{item.title}</Text>
                       <Text style='display:block;font-size:11px;color:#52c41a;margin-top:2px'>✓ 已确认</Text>
                     </View>
-                    <View className='btn-delete' style='padding:6px 10px;margin:0;border:none;flex-shrink:0;width:auto' onClick={async () => {
-                      const db = Taro.cloud.database()
-                      await db.collection('corrections').doc(item._id).remove()
-                      await loadCorrections()
+                    <View className='btn-delete' style='padding:6px 10px;margin:0;border:none;flex-shrink:0;width:auto' onClick={async (e: any) => {
+                      e.stopPropagation()
+                      try {
+                        const db = Taro.cloud.database()
+                        await db.collection('corrections').doc(item._id).remove()
+                        setCorrectionList(prev => prev.filter((r: any) => r._id !== item._id))
+                        Taro.showToast({ title: '已删除', icon: 'success' })
+                      } catch { Taro.showToast({ title: '删除失败', icon: 'none' }) }
                     }}>
                       <Text className='btn-delete-text' style='font-size:12px'>删除</Text>
                     </View>
