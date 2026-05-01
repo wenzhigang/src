@@ -203,7 +203,8 @@ export default function Explore() {
 
   const goToArtwork = (id: string, list?: string[]) => {
     if (list && list.length > 0) {
-      (Taro as any)._artworkList = list
+      ;(Taro as any)._artworkList = list
+      Taro.setStorageSync('_artworkList', list)
     }
     Taro.navigateTo({ url: `/pages/artwork/index?id=${id}` })
   }

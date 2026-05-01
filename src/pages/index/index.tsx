@@ -53,7 +53,9 @@ export default function Index() {
   }
 
   const goArtwork = (id: string) => {
-    (Taro as any)._artworkList = artworks.map(a => a._id)
+    const list1 = artworks.map(a => a._id)
+    ;(Taro as any)._artworkList = list1
+    Taro.setStorageSync('_artworkList', list1)
     Taro.navigateTo({ url: `/pages/artwork/index?id=${id}` })
   }
   const goArtist  = (id: string) => Taro.navigateTo({ url: `/pages/artist/index?id=${id}` })

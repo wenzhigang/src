@@ -1,5 +1,5 @@
 import { View, Text, Image, ScrollView } from '@tarojs/components'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Taro from '@tarojs/taro'
 import './index.scss'
 
@@ -29,16 +29,35 @@ export default function ArtworkDetail() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [touchStartX, setTouchStartX] = useState(0)
   const [touchStartY, setTouchStartY] = useState(0)
+  const currentIndexRef = useRef(0)
+  const switchingRef = useRef(false)
+  const lastSwitchTimeRef = useRef(0)
+  const artworkListRef = useRef<string[]>([])
 
   useEffect(() => {
     const params = ((Taro.getCurrentInstance() || {}).router || {}).params
     const id = (params && params.id) || 'artwork_002'
-    console.log('artwork id:', id)
     const list = (Taro as any)._artworkList as string[] || []
     if (list.length > 0) {
       setArtworkList(list)
+      artworkListRef.current = list
       const idx = list.indexOf(id)
-      setCurrentIndex(idx >= 0 ? idx : 0)
+      const initIdx = idx >= 0 ? idx : 0
+      setCurrentIndex(initIdx)
+      currentIndexRef.current = initIdx
+    } else {
+      // 没有列表时，尝试从存储里恢复
+      try {
+        const saved = Taro.getStorageSync('_artworkList')
+        if (saved && saved.length > 0) {
+          setArtworkList(saved)
+          artworkListRef.current = saved
+          const idx = saved.indexOf(id)
+          const initIdx = idx >= 0 ? idx : 0
+          setCurrentIndex(initIdx)
+          currentIndexRef.current = initIdx
+        }
+      } catch {}
     }
     loadArtwork(id)
   }, [])
@@ -46,7 +65,8 @@ export default function ArtworkDetail() {
   const loadArtwork = async (id: string) => {
     try {
       const db = Taro.cloud.database()
-      const res = await db.collection('artworks').doc(id).get()
+      const timeoutP = new Promise((_, rej) => setTimeout(() => rej(new Error('超时')), 15000))
+      const res = await Promise.race([db.collection('artworks').doc(id).get(), timeoutP]) as any
       if (res.data) {
         setArtwork(res.data as Artwork)
         checkFav(id)
@@ -55,12 +75,14 @@ export default function ArtworkDetail() {
         setArtwork(null)
       }
     } catch(e) {
-      console.error('loadArtwork error:', e)
+      const msg = String(e).slice(0, 30)
+      Taro.showToast({ title: `失败:${msg}`, icon: 'none', duration: 5000 })
       setArtwork(null)
     } finally {
       setLoading(false)
     }
   }
+
 
   const checkFav = async (id: string) => {
     try {
@@ -95,24 +117,21 @@ export default function ArtworkDetail() {
   }
 
   const switchArtwork = (dir: 'prev' | 'next') => {
-    if (artworkList.length === 0) return
-    const newIdx = dir === 'prev' ? currentIndex - 1 : currentIndex + 1
-    if (newIdx < 0 || newIdx >= artworkList.length) {
+    const list = artworkListRef.current
+    if (list.length === 0) {
+      Taro.showToast({ title: '请从列表页进入以支持切换', icon: 'none', duration: 1500 })
+      return
+    }
+    const curIdx = currentIndexRef.current
+    const newIdx = dir === 'prev' ? curIdx - 1 : curIdx + 1
+    if (newIdx < 0 || newIdx >= list.length) {
       Taro.showToast({ title: dir === 'prev' ? '已是第一幅' : '已是最后一幅', icon: 'none', duration: 1000 })
       return
     }
-    setCurrentIndex(newIdx)
-    setLoading(true)
-    setArtwork(null)
-    setExpanded(false)
-    loadArtwork(artworkList[newIdx])
-  }
-
-  const onTouchStart = (e: any) => setTouchStartX(e.touches[0].clientX)
-
-  const onTouchEnd = (e: any) => {
-    const delta = e.changedTouches[0].clientX - touchStartX
-    if (Math.abs(delta) > 80) switchArtwork(delta > 0 ? 'prev' : 'next')
+    const nextId = list[newIdx]
+    // 用redirectTo替换当前页面，避免state异步问题
+    ;(Taro as any)._artworkList = list
+    Taro.redirectTo({ url: `/pages/artwork/index?id=${nextId}` })
   }
 
   const toggleFav = async () => {
@@ -139,13 +158,11 @@ export default function ArtworkDetail() {
     finally { setFavLoading(false) }
   }
 
-  if (loading) return (
-    <View className='loading-wrap'><Text className='loading-text'>加载中...</Text></View>
+  if (loading || !artwork) return (
+    <View className='loading-wrap'>
+      <Text className='loading-text'>{loading ? '加载中...' : '画作不存在'}</Text>
+    </View>
   )
-  if (!artwork) return (
-    <View className='loading-wrap'><Text className='loading-text'>画作不存在</Text></View>
-  )
-
   const rawDesc = artwork.description || ''
   const desc = rawDesc
     .replace(/#{1,6}\s+[^\n]*/g, '')
@@ -158,27 +175,26 @@ export default function ArtworkDetail() {
     .trim()
 
   return (
-    <View className='page-wrap'>
+    <View
+      className='page-wrap'
+      onTouchStart={(e: any) => {
+        setTouchStartX(e.touches[0].clientX)
+        setTouchStartY(e.touches[0].clientY)
+      }}
+      onTouchEnd={(e: any) => {
+        e.stopPropagation()
+        const deltaX = e.changedTouches[0].clientX - touchStartX
+        const deltaY = e.changedTouches[0].clientY - touchStartY
+        if (Math.abs(deltaY) > Math.abs(deltaX) + 10) return
+        if (Math.abs(deltaX) > 60) {
+          switchArtwork(deltaX > 0 ? 'prev' : 'next')
+        } else if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
+          if (artwork) Taro.previewImage({ current: artwork.image_url, urls: [artwork.image_url] })
+        }
+      }}
+    >
     <ScrollView scrollY className='page'>
-      <View
-        onTouchStart={(e: any) => {
-          setTouchStartX(e.touches[0].clientX)
-          setTouchStartY(e.touches[0].clientY)
-        }}
-        onTouchEnd={(e: any) => {
-          const deltaX = e.changedTouches[0].clientX - touchStartX
-          const deltaY = e.changedTouches[0].clientY - touchStartY
-          // 垂直滑动距离大于水平，说明用户在上下滚动，不触发任何操作
-          if (Math.abs(deltaY) > Math.abs(deltaX)) return
-          // 水平滑动超过60px，切换画作
-          if (Math.abs(deltaX) > 60) {
-            switchArtwork(deltaX > 0 ? 'prev' : 'next')
-          } else if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
-            // 几乎没有移动，才算点击，触发全屏
-            Taro.previewImage({ current: artwork.image_url, urls: [artwork.image_url] })
-          }
-        }}
-      >
+      <View>
         <Image className='hero-img' src={artwork.image_url} mode='widthFix' />
       </View>
       <View className='content'>
