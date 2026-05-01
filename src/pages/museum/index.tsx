@@ -47,10 +47,10 @@ export default function MuseumDetail() {
       setMuseum(museumData)
       Taro.setNavigationBarTitle({ title: museumData.name })
 
-      // 获取该博物馆的画作（通过 museum_name 匹配）
+      // 获取该博物馆的画作（通过 museum_id 匹配）
       const artworksRes = await db.collection('artworks')
-        .where({ museum_name: museumData.name })
-        .limit(20)
+        .where({ museum_id: museumId })
+        .limit(50)
         .get()
       setArtworks(artworksRes.data as Artwork[])
     } catch (err) {
