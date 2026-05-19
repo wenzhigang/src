@@ -31,11 +31,30 @@ export default function ArtworkDetail() {
   const [touchStartX, setTouchStartX] = useState(0)
   const { scale, setScale } = useFontScale()
   const [showFontMenu, setShowFontMenu] = useState(false)
+  const [imgFullscreen, setImgFullscreen] = useState(false)
   const [touchStartY, setTouchStartY] = useState(0)
+  const [audioPlaying, setAudioPlaying] = useState(false)
+  const [audioLoading, setAudioLoading] = useState(false)
+  const [audioPaused, setAudioPaused] = useState(false)
+  const audioCtxRef = useRef<any>(null)
+  const audioStopRef = useRef(false)
+  const audioPausedRef = useRef(false)
+  const audioSegmentsRef = useRef<string[]>([])
+  const audioSegIdxRef = useRef(0)
   const currentIndexRef = useRef(0)
   const switchingRef = useRef(false)
   const lastSwitchTimeRef = useRef(0)
   const artworkListRef = useRef<string[]>([])
+
+  useEffect(() => {
+    return () => {
+      audioStopRef.current = true
+      if (audioCtxRef.current) {
+        try { audioCtxRef.current.stop(); audioCtxRef.current.destroy() } catch {}
+        audioCtxRef.current = null
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const params = ((Taro.getCurrentInstance() || {}).router || {}).params
@@ -119,6 +138,115 @@ export default function ArtworkDetail() {
     } catch {}
   }
 
+  // 获取TTS临时URL
+  const getTtsUrl = async (text: string, idx: number): Promise<string | null> => {
+    try {
+      const res = await Taro.cloud.callFunction({
+        name: 'textToSpeech',
+        data: { text, fileKey: `tts/tts_${Date.now()}_${idx}.mp3` }
+      }) as any
+      if (!res.result?.success) return null
+      const tempRes = await Taro.cloud.getTempFileURL({ fileList: [res.result.fileID] }) as any
+      return tempRes.fileList[0].tempFileURL
+    } catch { return null }
+  }
+
+  // 从指定段开始播放
+  const playFromIdx = async (startIdx: number) => {
+    const segs = audioSegmentsRef.current
+    let nextUrl = getTtsUrl(segs[startIdx], startIdx)
+    for (let i = startIdx; i < segs.length; i++) {
+      if (audioStopRef.current) break
+      const url = await nextUrl
+      if (audioStopRef.current) break
+      if (!url) {
+        if (i + 1 < segs.length) nextUrl = getTtsUrl(segs[i + 1], i + 1)
+        continue
+      }
+      if (i + 1 < segs.length) nextUrl = getTtsUrl(segs[i + 1], i + 1)
+      audioSegIdxRef.current = i
+      await new Promise<void>((resolve) => {
+        const ctx = Taro.createInnerAudioContext()
+        audioCtxRef.current = ctx
+        ctx.src = url
+        if (i === startIdx) { setAudioLoading(false); setAudioPlaying(true) }
+        ctx.onEnded(() => { ctx.destroy(); audioCtxRef.current = null; resolve() })
+        ctx.onError(() => { ctx.destroy(); audioCtxRef.current = null; resolve() })
+        ctx.play()
+      })
+    }
+    if (!audioPausedRef.current) {
+      setAudioPlaying(false)
+      audioSegIdxRef.current = 0
+      audioSegmentsRef.current = []
+    }
+  }
+
+  const toggleAudio = async () => {
+    // 停止/暂停
+    if (audioPlaying) {
+      audioPausedRef.current = true
+      audioStopRef.current = true
+      setAudioPaused(true)
+      setAudioPlaying(false)
+      if (audioCtxRef.current) {
+        audioCtxRef.current.stop()
+        audioCtxRef.current.destroy()
+        audioCtxRef.current = null
+      }
+      return
+    }
+    // 继续
+    if (audioPausedRef.current && audioSegmentsRef.current.length > 0) {
+      audioPausedRef.current = false
+      audioStopRef.current = false
+      setAudioPaused(false)
+      setAudioLoading(true)
+      playFromIdx(audioSegIdxRef.current)
+      return
+    }
+    // 全新播放
+    audioStopRef.current = false
+    audioPausedRef.current = false
+    setAudioPaused(false)
+    setAudioLoading(true)
+
+    // 预处理文本
+    const cleaned = desc
+      .replace(/列奥纳多·达·芬奇/g, '达芬奇')
+      .replace(/米开朗基罗·博那罗蒂/g, '米开朗基罗')
+      .replace(/拉斐尔·桑西/g, '拉斐尔')
+      .replace(/伦勃朗·范·莱因/g, '伦勃朗')
+      .replace(/扬·维米尔/g, '维米尔')
+      .replace(/约翰内斯·维米尔/g, '维米尔')
+      .replace(/文森特·梵高/g, '梵高')
+      .replace(/克劳德·莫奈/g, '莫奈')
+      .replace(/保罗·塞尚/g, '塞尚')
+      .replace(/保罗·高更/g, '高更')
+      .replace(/桑德罗·波提切利/g, '波提切利')
+      .replace(/彼得·保罗·鲁本斯/g, '鲁本斯')
+      .replace(/[A-Za-z]+/g, '')
+      .replace(/·/g, '')
+      .replace(/[（(][^）)]*[）)]/g, '')
+      .replace(/\n+/g, '。')
+      .replace(/\s+/g, ' ')
+      .trim()
+
+    // 按句号分段，每段不超过90字
+    const segs: string[] = []
+    const sentences = cleaned.split(/(?<=[。！？])/)
+    let cur = ''
+    for (const s of sentences) {
+      if ((cur + s).length > 90 && cur) { segs.push(cur.trim()); cur = s }
+      else cur += s
+    }
+    if (cur.trim()) segs.push(cur.trim())
+
+    audioSegmentsRef.current = segs
+    audioSegIdxRef.current = 0
+    playFromIdx(0)
+  }
+
   const switchArtwork = (dir: 'prev' | 'next') => {
     const list = artworkListRef.current
     if (list.length === 0) {
@@ -132,6 +260,13 @@ export default function ArtworkDetail() {
       return
     }
     const nextId = list[newIdx]
+    // 切换前停止音频
+    audioStopRef.current = true
+    if (audioCtxRef.current) {
+      audioCtxRef.current.stop()
+      audioCtxRef.current.destroy()
+      audioCtxRef.current = null
+    }
     // 用redirectTo替换当前页面，避免state异步问题
     ;(Taro as any)._artworkList = list
     Taro.redirectTo({ url: `/pages/artwork/index?id=${nextId}` })
@@ -160,6 +295,22 @@ export default function ArtworkDetail() {
     } catch { Taro.showToast({ title: '操作失败', icon: 'none' }) }
     finally { setFavLoading(false) }
   }
+
+  if (imgFullscreen) return (
+    <View
+      style='position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:999;display:flex;align-items:center;justify-content:center'
+      onClick={() => setImgFullscreen(false)}
+    >
+      <Image
+        src={artwork?.image_url || ''}
+        mode='widthFix'
+        style='width:100%;'
+      />
+      <View style='position:absolute;top:20px;right:20px;padding:8px 16px;background:rgba(0,0,0,0.5);border-radius:20px'>
+        <Text style='color:#fff;font-size:14px'>点击关闭</Text>
+      </View>
+    </View>
+  )
 
   if (loading || !artwork) return (
     <View className='loading-wrap'>
@@ -193,7 +344,7 @@ export default function ArtworkDetail() {
             if (Math.abs(deltaX) > 60) {
               switchArtwork(deltaX > 0 ? 'prev' : 'next')
             } else if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
-              Taro.previewImage({ current: artwork.image_url, urls: [artwork.image_url] })
+              setImgFullscreen(true)
             }
           }}
         >
@@ -229,7 +380,19 @@ export default function ArtworkDetail() {
         <View className='divider' />
         <View className='desc-section'>
           <View style='display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #f0f0f0;position:relative'>
-            <Text style='font-size:20px;font-weight:600;color:#1a1a1a'>📖 介绍</Text>
+            <View style='display:flex;align-items:center;gap:8px'>
+              <Text style='font-size:20px;font-weight:600;color:#1a1a1a'>📖 介绍</Text>
+              <View
+                style={`display:flex;align-items:center;gap:4px;background:${audioPlaying?'#1A3C34':audioPaused?'#c9a84c':'#f5f5f5'};padding:6px 12px;border-radius:16px`}
+                onTouchStart={(e: any) => e.stopPropagation()}
+                onTouchEnd={(e: any) => e.stopPropagation()}
+                onClick={(e: any) => { e.stopPropagation(); toggleAudio() }}
+              >
+                <Text style={`font-size:14px;color:${(audioPlaying||audioPaused)?'#fff':'#333'}`}>
+                  {audioLoading ? '加载中' : audioPlaying ? '⏸ 暂停' : audioPaused ? '▶ 继续' : '🔊 语音'}
+                </Text>
+              </View>
+            </View>
             <View onTouchStart={(e: any) => e.stopPropagation()} onTouchEnd={(e: any) => e.stopPropagation()}>
               <View
                 style='display:flex;align-items:center;gap:4px;background:#f5f5f5;padding:6px 12px;border-radius:16px'
