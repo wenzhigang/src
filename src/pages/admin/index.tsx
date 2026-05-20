@@ -41,6 +41,12 @@ export default function Admin() {
   const [correctionHasMore, setCorrectionHasMore] = useState(false)
   const [pendingCount, setPendingCount] = useState(0)
   const [importProgress, setImportProgress] = useState('')
+  const [showCleanPanel, setShowCleanPanel] = useState(false)
+  const [longImages, setLongImages] = useState<any[]>([])
+  const [scanningLong, setScanningLong] = useState(false)
+  const [scanProgress, setScanProgress] = useState('')
+  const [deletingLong, setDeletingLong] = useState(false)
+  const [selectedLong, setSelectedLong] = useState<Set<string>>(new Set())
   const [showImportOptions, setShowImportOptions] = useState(false)
   const [showPromptEditor, setShowPromptEditor] = useState(false)
   const [promptText, setPromptText] = useState('')
@@ -487,6 +493,49 @@ export default function Admin() {
 
   const f = (field: keyof Artwork, val: string) => setEditing(prev => prev ? { ...prev, [field]: val } : null)
 
+  const scanLongImages = async () => {
+    setScanningLong(true)
+    setScanProgress('扫描中，请稍候（可能需要几分钟）...')
+    setLongImages([])
+    try {
+      const res = await Taro.cloud.callFunction({ name: 'cleanLongImages', data: { action: 'scan' } }) as any
+      const result = res.result
+      setLongImages(result.artworks || [])
+      setScanProgress(`扫描完成，找到 ${result.count} 张超长图片`)
+      setSelectedLong(new Set(result.artworks.map((a: any) => a._id)))
+    } catch(e) {
+      setScanProgress('扫描失败')
+    } finally {
+      setScanningLong(false)
+    }
+  }
+
+  const deleteLongImages = async () => {
+    if (selectedLong.size === 0) return
+    Taro.showModal({
+      title: '确认删除',
+      content: `将删除 ${selectedLong.size} 张超长图片及无作品的艺术家`,
+      success: async (res) => {
+        if (!res.confirm) return
+        setDeletingLong(true)
+        try {
+          const ids = Array.from(selectedLong)
+          for (const id of ids) {
+            await Taro.cloud.callFunction({ name: 'manageArtwork', data: { action: 'delete', id } })
+          }
+          Taro.showToast({ title: `已删除 ${ids.length} 幅画作`, icon: 'success', duration: 3000 })
+          setLongImages([])
+          setSelectedLong(new Set())
+          setScanProgress('')
+        } catch(e) {
+          Taro.showToast({ title: '删除失败', icon: 'none' })
+        } finally {
+          setDeletingLong(false)
+        }
+      }
+    })
+  }
+
   return (
     <View className='admin-page'>
       <View className='admin-header'>
@@ -502,11 +551,48 @@ export default function Admin() {
             <View className='pic-toggle' onClick={() => setLargePic(!largePic)}>
               <Text className='pic-toggle-text'>{largePic ? '小图' : '大图'}</Text>
             </View>
+            <View className='pic-toggle' onClick={() => setShowCleanPanel(!showCleanPanel)}>
+              <Text className='pic-toggle-text'>🧹清理</Text>
+            </View>
           </View>
         </View>
         <Text className='admin-sub'>共 {artworks.length} 幅画作已加载</Text>
       </View>
 
+      {showCleanPanel && (
+        <View style='margin:0 16px 12px;padding:16px;background:#1a1a2e;border-radius:12px'>
+          <Text style='color:#fff;font-size:15px;font-weight:600;display:block;margin-bottom:8px'>🧹 超长图片清理（长宽比>10:1）</Text>
+          <View style='display:flex;gap:12px;margin-bottom:8px'>
+            <View style='flex:1;background:#1A3C34;padding:10px;border-radius:8px;text-align:center' onClick={scanLongImages}>
+              <Text style='color:#fff;font-size:14px'>{scanningLong ? '扫描中...' : '🔍 扫描'}</Text>
+            </View>
+            {longImages.length > 0 && (
+              <View style='flex:1;background:#8B0000;padding:10px;border-radius:8px;text-align:center' onClick={deleteLongImages}>
+                <Text style='color:#fff;font-size:14px'>{deletingLong ? '删除中...' : `🗑️ 删除(${selectedLong.size})`}</Text>
+              </View>
+            )}
+          </View>
+          {scanProgress ? <Text style='color:#C9A84C;font-size:13px;display:block;margin-bottom:8px'>{scanProgress}</Text> : null}
+          {longImages.map(item => (
+            <View key={item._id} style={`display:flex;align-items:center;padding:8px 0;border-bottom:1px solid #333;opacity:${selectedLong.has(item._id)?1:0.4}`}
+              onClick={() => {
+                const s = new Set(selectedLong)
+                if (s.has(item._id)) s.delete(item._id); else s.add(item._id)
+                setSelectedLong(s)
+              }}
+            >
+              <Image src={item.image_url} mode='aspectFit' style='width:60px;height:30px;margin-right:10px;background:#333' />
+              <View style='flex:1'>
+                <Text style='color:#fff;font-size:13px;display:block'>{item.title}</Text>
+                <Text style='color:#aaa;font-size:11px'>{item.artist_name} · {item.width}×{item.height} (比例{item.ratio})</Text>
+              </View>
+              <Text style={`font-size:18px;${selectedLong.has(item._id)?'color:#C9A84C':'color:#555'}`}>
+                {selectedLong.has(item._id) ? '☑' : '☐'}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
       <View className='search-bar'>
         <Input className='search-input' placeholder='搜索画作或画家...' placeholderStyle='color:rgba(255,255,255,0.3)'
           value={keyword} onInput={e => setKeyword(e.detail.value)} onConfirm={handleSearch} />
@@ -556,6 +642,9 @@ export default function Admin() {
           )
         ))}
         {hasMore && <View className='load-more'><Text className='load-more-text'>{loading ? '加载中...' : '上滑加载更多'}</Text></View>}
+        <View style='height:16px' />
+
+
       </ScrollView>
 
       {showCorrections && (
