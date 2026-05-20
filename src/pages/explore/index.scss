@@ -7,9 +7,10 @@ $white: #FFFFFF;
 
 .explore {
   background-color: $bg;
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 // 搜索框
@@ -17,12 +18,15 @@ $white: #FFFFFF;
   display: flex;
   align-items: center;
   background-color: $white;
-  margin: 12px 16px;
+  margin: 0 16px;
   border-radius: 20px;
   height: 40px;
   padding: 0 14px;
   gap: 8px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  position: sticky;
+  top: 0;
+  z-index: 11;
 }
 
 .search-icon {
@@ -49,11 +53,8 @@ $white: #FFFFFF;
 // 切换标签
 .tabs {
   display: flex;
-  background-color: $white;
-  margin: 0 16px 12px;
-  border-radius: 10px;
-  padding: 4px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  flex: 1;
+  height: 36px;
 }
 
 .tab-item {
@@ -62,31 +63,28 @@ $white: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-
-  &.active {
-    background-color: $primary;
-    .tab-text {
-      color: $white;
-      font-weight: 600;
-    }
-  }
 }
 
 .tab-text {
   font-size: 18px;
-  color: $text-sub;
+  color: #999;
+  font-weight: 400;
+}
+
+.tab-item.active .tab-text {
+  color: #1A3C34;
+  font-weight: 600;
 }
 
 // 列表容器
 .list-container {
   flex: 1;
-  padding: 0 16px;
-  height: calc(100vh - 180px);
+  height: 0;
 }
 
 // 作品双列网格
 .artwork-grid {
+  padding: 0 16px;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
@@ -129,6 +127,8 @@ $white: #FFFFFF;
 
 // 博物馆/艺术家列表项（共用）
 .museum-item {
+  padding-left: 16px;
+  padding-right: 16px;
   display: flex;
   align-items: center;
   background-color: $white;
@@ -276,4 +276,45 @@ $white: #FFFFFF;
 .load-more-text {
   font-size: 12px;
   color: $text-sub;
+}
+
+.large-item {
+  margin-bottom: 12px;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+.large-img {
+  width: 100%;
+  display: block;
+}
+.large-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px 14px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.65));
+}
+.large-title {
+  display: block;
+  font-size: 17px;
+  font-weight: 600;
+  color: #fff;
+}
+.large-sub {
+  display: block;
+  font-size: 13px;
+  color: rgba(255,255,255,0.8);
+  margin-top: 3px;
+}
+
+.large-item {
+  border-radius: 0;
+}
+
+.large-container {
+  flex: 1;
+  padding: 0;
+  height: calc(100vh - 88px);
 }

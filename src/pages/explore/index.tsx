@@ -1,6 +1,6 @@
 import { View, Text, Image, ScrollView } from '@tarojs/components'
 import { useState, useEffect, useRef } from 'react'
-import Taro, { useDidShow, useReachBottom } from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import './index.scss'
 
 interface Museum {
@@ -59,6 +59,7 @@ export default function Explore() {
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [hasMore, setHasMore] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
+  const [largePic, setLargePic] = useState(false)
   const artworkOffsetRef = useRef(0)
   const PAGE_SIZE = 50
 
@@ -138,10 +139,7 @@ export default function Explore() {
     }
   }
 
-  // 页面触底自动加载更多画作
-  useReachBottom(() => {
-    if (activeTab === 'artwork') loadMoreArtworks()
-  })
+
 
   // 云端搜索（画作名、艺术家名、博物馆名）
   const handleSearch = async (val: string) => {
@@ -288,31 +286,38 @@ export default function Explore() {
         </ScrollView>
       )}
 
+      {/* 切换标签 - 始终显示 */}
+      <View style='display:flex;align-items:center;height:36px;padding:0 16px;flex-shrink:0'>
+        <View className='tabs' style='flex:1'>
+          <View
+            className={`tab-item ${activeTab === 'artwork' ? 'active' : ''}`}
+            onClick={() => setActiveTab('artwork')}
+          >
+            <Text className='tab-text'>作品</Text>
+          </View>
+          <View
+            className={`tab-item ${activeTab === 'artist' ? 'active' : ''}`}
+            onClick={() => { setActiveTab('artist'); loadArtists() }}
+          >
+            <Text className='tab-text'>艺术家</Text>
+          </View>
+          <View
+            className={`tab-item ${activeTab === 'museum' ? 'active' : ''}`}
+            onClick={() => setActiveTab('museum')}
+          >
+            <Text className='tab-text'>博物馆</Text>
+          </View>
+        </View>
+        <View style='padding:0 12px;display:flex;align-items:center' onClick={() => setLargePic(!largePic)}>
+          <Text className='tab-text' style={`color:#1076FF`}>
+            {largePic ? '小图' : '大图'}
+          </Text>
+        </View>
+      </View>
+
       {/* 正常浏览模式 */}
       {!searchText.trim() && (
         <>
-          {/* 切换标签 */}
-          <View className='tabs'>
-            <View
-              className={`tab-item ${activeTab === 'artwork' ? 'active' : ''}`}
-              onClick={() => setActiveTab('artwork')}
-            >
-              <Text className='tab-text'>作品</Text>
-            </View>
-            <View
-              className={`tab-item ${activeTab === 'artist' ? 'active' : ''}`}
-              onClick={() => { setActiveTab('artist'); loadArtists() }}
-            >
-              <Text className='tab-text'>艺术家</Text>
-            </View>
-            <View
-              className={`tab-item ${activeTab === 'museum' ? 'active' : ''}`}
-              onClick={() => setActiveTab('museum')}
-            >
-              <Text className='tab-text'>博物馆</Text>
-            </View>
-          </View>
-
           {loading && (
             <View className='loading-row'>
               <Text className='loading-text'>加载中...</Text>
@@ -321,56 +326,100 @@ export default function Explore() {
 
           {/* 作品列表 */}
           {!loading && activeTab === 'artwork' && (
-            <View className='list-container'>
-              <View className='artwork-grid'>
-                {artworks.map(artwork => (
-                  <View className='artwork-card' key={artwork._id} onClick={() => goToArtwork(artwork._id, artworks.map(a => a._id))}>
-                    <Image className='artwork-image' src={artwork.image_url} mode='aspectFill' />
-                    <View className='artwork-info'>
-                      <Text className='artwork-title'>{artwork.title}</Text>
-                      <Text className='artwork-artist'>{artwork.artist_name}</Text>
+            <ScrollView scrollY className={largePic ? 'large-container' : 'list-container'} onScrollToLower={() => loadMoreArtworks()} lowerThreshold={300}>
+              {largePic ? (
+                <View>
+                  {artworks.map(artwork => (
+                    <View key={artwork._id} className='large-item' onClick={() => goToArtwork(artwork._id, artworks.map(a => a._id))}>
+                      <Image className='large-img' src={artwork.image_url} mode='widthFix' lazyLoad />
+                      <View className='large-overlay'>
+                        <Text className='large-title'>{artwork.title}</Text>
+                        <Text className='large-sub'>{artwork.artist_name}</Text>
+                      </View>
                     </View>
-                  </View>
-                ))}
-              </View>
+                  ))}
+                </View>
+              ) : (
+                <View className='artwork-grid'>
+                  {artworks.map(artwork => (
+                    <View className='artwork-card' key={artwork._id} onClick={() => goToArtwork(artwork._id, artworks.map(a => a._id))}>
+                      <Image className='artwork-image' src={artwork.image_url} mode='aspectFill' />
+                      <View className='artwork-info'>
+                        <Text className='artwork-title'>{artwork.title}</Text>
+                        <Text className='artwork-artist'>{artwork.artist_name}</Text>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              )}
               {loadingMore && <View className='load-more-tip'><Text className='load-more-text'>加载更多...</Text></View>}
               {!hasMore && artworks.length > 0 && <View className='load-more-tip'><Text className='load-more-text'>共 {artworks.length} 幅画作</Text></View>}
-            </View>
+            </ScrollView>
           )}
 
           {/* 艺术家列表 */}
           {!loading && activeTab === 'artist' && (
-            <ScrollView scrollY className='list-container'>
-              {artists.map(artist => (
-                <View className='museum-item' key={artist._id} onClick={() => goToArtist(artist._id)}>
-                  <Image className='museum-image' src={artist.avatar_url} mode='aspectFill' />
-                  <View className='museum-info'>
-                    <Text className='museum-name'>{artist.name}</Text>
-                    <Text className='museum-name-en'>{artist.name_en}</Text>
-                    <Text className='museum-city'>{artist.style}</Text>
-                    <Text className='museum-count'>{artist.birth_year} – {artist.death_year} · {artist.artwork_count} 幅作品</Text>
+            <ScrollView scrollY className={largePic ? 'large-container' : 'list-container'} onScrollToLower={() => loadMoreArtworks()} lowerThreshold={300}>
+              {largePic ? (
+                <View>
+                {artists.map(artist => (
+                  <View key={artist._id} className='large-item' onClick={() => goToArtist(artist._id)}>
+                    <Image className='large-img' src={artist.avatar_url} mode='aspectFill' lazyLoad />
+                    <View className='large-overlay'>
+                      <Text className='large-title'>{artist.name}</Text>
+                      <Text className='large-sub'>{artist.style}</Text>
+                    </View>
                   </View>
-                  <Text className='arrow'>›</Text>
+                ))
+                }
                 </View>
-              ))}
+              ) : (
+                artists.map(artist => (
+                  <View className='museum-item' key={artist._id} onClick={() => goToArtist(artist._id)}>
+                    <Image className='museum-image' src={artist.avatar_url} mode='aspectFill' />
+                    <View className='museum-info'>
+                      <Text className='museum-name'>{artist.name}</Text>
+                      <Text className='museum-name-en'>{artist.name_en}</Text>
+                      <Text className='museum-city'>{artist.style}</Text>
+                      <Text className='museum-count'>{artist.birth_year} – {artist.death_year} · {artist.artwork_count} 幅作品</Text>
+                    </View>
+                    <Text className='arrow'>›</Text>
+                  </View>
+                ))
+              )}
             </ScrollView>
           )}
 
           {/* 博物馆列表 */}
           {!loading && activeTab === 'museum' && (
-            <ScrollView scrollY className='list-container'>
-              {museums.map(museum => (
-                <View className='museum-item' key={museum._id} onClick={() => goToMuseum(museum._id)}>
-                  <Image className='museum-image' src={museum.cover_url} mode='aspectFill' />
-                  <View className='museum-info'>
-                    <Text className='museum-name'>{museum.name}</Text>
-                    <Text className='museum-name-en'>{museum.name_en}</Text>
-                    <Text className='museum-city'>📍 {museum.city}，{museum.country}</Text>
-                    <Text className='museum-count'>已收录 {museum.artwork_count} 幅画作</Text>
+            <ScrollView scrollY className={largePic ? 'large-container' : 'list-container'} onScrollToLower={() => loadMoreArtworks()} lowerThreshold={300}>
+              {largePic ? (
+                <View>
+                {museums.map(museum => (
+                  <View key={museum._id} className='large-item' onClick={() => goToMuseum(museum._id)}>
+                    <Image className='large-img' src={museum.cover_url} mode='widthFix' lazyLoad />
+                    <View className='large-overlay'>
+                      <Text className='large-title'>{museum.name}</Text>
+                      <Text className='large-sub'>📍 {museum.city}，{museum.country}</Text>
+                    </View>
                   </View>
-                  <Text className='arrow'>›</Text>
+                ))
+                }
                 </View>
-              ))}
+              ) : (
+                museums.map(museum => (
+                  <View className='museum-item' key={museum._id} onClick={() => goToMuseum(museum._id)}>
+                    <Image className='museum-image' src={museum.cover_url} mode='aspectFill' />
+                    <View className='museum-info'>
+                      <Text className='museum-name'>{museum.name}</Text>
+                      <Text className='museum-name-en'>{museum.name_en}</Text>
+                      <Text className='museum-city'>📍 {museum.city}，{museum.country}</Text>
+                      <Text className='museum-count'>已收录 {museum.artwork_count} 幅画作</Text>
+                    </View>
+                    <Text className='arrow'>›</Text>
+                  </View>
+                ))
+              )}
             </ScrollView>
           )}
         </>

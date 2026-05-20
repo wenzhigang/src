@@ -213,13 +213,12 @@ export default function Index() {
   return (
     <View className='home'>
       <View className='tab-bar'>
-        <View style='display:flex;flex:1'>
+        <View className='tab-group'>
           {(['artwork','artist','museum'] as Tab[]).map(tab => {
             const labels: Record<Tab,string> = { artwork:'作品', artist:'艺术家', museum:'博物馆' }
             return (
               <View key={tab} className={`tab-item ${activeTab===tab?'active':''}`} onClick={() => setActiveTab(tab)}>
                 <Text className='tab-text'>{labels[tab]}</Text>
-                {activeTab===tab && <View className='tab-line' />}
               </View>
             )
           })}
