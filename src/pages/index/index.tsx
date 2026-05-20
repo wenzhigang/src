@@ -201,8 +201,8 @@ export default function Index() {
             style='padding:0 12px;display:flex;align-items:center'
             onClick={() => setLargePic(!largePic)}
           >
-            <Text style={`font-size:13px;color:${largePic?'#1A3C34':'#999'};border:1px solid ${largePic?'#1A3C34':'#ddd'};padding:3px 10px;border-radius:12px`}>
-              {largePic ? '大图' : '正常'}
+            <Text className='tab-text' style={`color:${largePic?'#1076FF':'#1076FF'}`}>
+              {largePic ? '小图' : '大图'}
             </Text>
           </View>
         )}
