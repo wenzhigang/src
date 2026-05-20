@@ -122,6 +122,20 @@ export default function Index() {
     )
   }
 
+  const renderArtistLarge = () => (
+    <View>
+      {artists.map(a => (
+        <View key={a._id} className='large-item' onClick={() => goArtist(a._id)}>
+          <Image className='large-img' src={a.avatar_url} mode='aspectFill' lazyLoad />
+          <View className='large-overlay'>
+            <Text className='large-title'>{a.name}</Text>
+            {a.style && <Text className='large-sub'>{a.style}</Text>}
+          </View>
+        </View>
+      ))}
+    </View>
+  )
+
   const renderArtistCols = () => {
     const [left, right] = splitCols(artists)
     return (
@@ -151,6 +165,20 @@ export default function Index() {
       </View>
     )
   }
+
+  const renderMuseumLarge = () => (
+    <View>
+      {museums.map(m => (
+        <View key={m._id} className='large-item' onClick={() => goMuseum(m._id)}>
+          <Image className='large-img' src={m.cover_url} mode='widthFix' lazyLoad />
+          <View className='large-overlay'>
+            <Text className='large-title'>{m.name}</Text>
+            <Text className='large-sub'>{m.city}</Text>
+          </View>
+        </View>
+      ))}
+    </View>
+  )
 
   const renderMuseumCols = () => {
     const [left, right] = splitCols(museums)
@@ -196,8 +224,7 @@ export default function Index() {
             )
           })}
         </View>
-        {activeTab === 'artwork' && (
-          <View
+        <View
             style='padding:0 12px;display:flex;align-items:center'
             onClick={() => setLargePic(!largePic)}
           >
@@ -205,12 +232,11 @@ export default function Index() {
               {largePic ? '小图' : '大图'}
             </Text>
           </View>
-        )}
       </View>
       <ScrollView scrollY className='content' onScrollToLower={() => { if (activeTab === 'artwork') loadArtworks() }} lowerThreshold={800}>
         {activeTab==='artwork' && (largePic ? renderArtworkLarge() : renderArtworkCols())}
-        {activeTab==='artist'   && renderArtistCols()}
-        {activeTab==='museum'   && renderMuseumCols()}
+        {activeTab==='artist'   && (largePic ? renderArtistLarge() : renderArtistCols())}
+        {activeTab==='museum'   && (largePic ? renderMuseumLarge() : renderMuseumCols())}
         {loading && <View className='loading'><Text className='loading-text'>加载中...</Text></View>}
         <View className='bottom-space' />
       </ScrollView>
