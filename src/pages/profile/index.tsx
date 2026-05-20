@@ -298,6 +298,9 @@ export default function Profile() {
         </View>
       </View>
 
+      <View className='icp-info'>
+        <Text className='icp-text'>沪ICP备2026060233号</Text>
+      </View>
       <View className='bottom-space' />
     </View>
   )

@@ -31,7 +31,6 @@ export default function ArtworkDetail() {
   const [touchStartX, setTouchStartX] = useState(0)
   const { scale, setScale } = useFontScale()
   const [showFontMenu, setShowFontMenu] = useState(false)
-  const [imgFullscreen, setImgFullscreen] = useState(false)
   const [touchStartY, setTouchStartY] = useState(0)
   const [audioPlaying, setAudioPlaying] = useState(false)
   const [audioLoading, setAudioLoading] = useState(false)
@@ -296,22 +295,6 @@ export default function ArtworkDetail() {
     finally { setFavLoading(false) }
   }
 
-  if (imgFullscreen) return (
-    <View
-      style='position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:999;display:flex;align-items:center;justify-content:center'
-      onClick={() => setImgFullscreen(false)}
-    >
-      <Image
-        src={artwork?.image_url || ''}
-        mode='widthFix'
-        style='width:100%;'
-      />
-      <View style='position:absolute;top:20px;right:20px;padding:8px 16px;background:rgba(0,0,0,0.5);border-radius:20px'>
-        <Text style='color:#fff;font-size:14px'>点击关闭</Text>
-      </View>
-    </View>
-  )
-
   if (loading || !artwork) return (
     <View className='loading-wrap'>
       <Text className='loading-text'>{loading ? '加载中...' : '画作不存在'}</Text>
@@ -344,7 +327,7 @@ export default function ArtworkDetail() {
             if (Math.abs(deltaX) > 60) {
               switchArtwork(deltaX > 0 ? 'prev' : 'next')
             } else if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
-              setImgFullscreen(true)
+              Taro.previewImage({ urls: [artwork!.image_url], current: artwork!.image_url })
             }
           }}
         >
