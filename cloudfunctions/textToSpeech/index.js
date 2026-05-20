@@ -3,8 +3,8 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const https = require('https')
 const crypto = require('crypto')
 
-const SECRET_ID = process.env.TENCENT_SECRET_ID || 'REMOVED'
-const SECRET_KEY = process.env.TENCENT_SECRET_KEY || 'REMOVED'
+const SECRET_ID = process.env.TENCENT_SECRET_ID
+const SECRET_KEY = process.env.TENCENT_SECRET_KEY
 
 function sign(secretKey, date, service) {
   const kDate = crypto.createHmac('sha256', 'TC3' + secretKey).update(date).digest()
