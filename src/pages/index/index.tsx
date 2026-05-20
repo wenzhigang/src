@@ -18,6 +18,7 @@ export default function Index() {
   const [loading,  setLoading]  = useState(true)
   const [offset,   setOffset]   = useState(0)
   const [hasMore,  setHasMore]  = useState(true)
+  const [largePic,  setLargePic]  = useState(false)
 
   useEffect(() => { loadArtworks(true) }, [])
 
@@ -67,6 +68,29 @@ export default function Index() {
     arr.forEach((item, i) => (i % 2 === 0 ? left : right).push(item))
     return [left, right]
   }
+
+  const renderArtworkLarge = () => (
+    <View>
+      {artworks.map(a => (
+        <View key={a._id} className='large-item' onClick={() => goArtwork(a._id)}>
+          <Image className='large-img' src={a.image_url} mode='widthFix' lazyLoad />
+          <View className='large-overlay'>
+            <Text className='large-title'>{a.title}</Text>
+            <Text className='large-sub'>{a.artist_name}</Text>
+          </View>
+        </View>
+      ))}
+
+      {hasMore && !loading && (
+        <View
+          style='padding:20px;text-align:center;color:#c9a84c;font-size:14px'
+          onClick={() => loadArtworks()}
+        >
+          ↓ 点击或继续滑动加载更多
+        </View>
+      )}
+    </View>
+  )
 
   const renderArtworkCols = () => {
     const [left, right] = splitCols(artworks)
@@ -161,18 +185,30 @@ export default function Index() {
   return (
     <View className='home'>
       <View className='tab-bar'>
-        {(['artwork','artist','museum'] as Tab[]).map(tab => {
-          const labels: Record<Tab,string> = { artwork:'作品', artist:'艺术家', museum:'博物馆' }
-          return (
-            <View key={tab} className={`tab-item ${activeTab===tab?'active':''}`} onClick={() => setActiveTab(tab)}>
-              <Text className='tab-text'>{labels[tab]}</Text>
-              {activeTab===tab && <View className='tab-line' />}
-            </View>
-          )
-        })}
+        <View style='display:flex;flex:1'>
+          {(['artwork','artist','museum'] as Tab[]).map(tab => {
+            const labels: Record<Tab,string> = { artwork:'作品', artist:'艺术家', museum:'博物馆' }
+            return (
+              <View key={tab} className={`tab-item ${activeTab===tab?'active':''}`} onClick={() => setActiveTab(tab)}>
+                <Text className='tab-text'>{labels[tab]}</Text>
+                {activeTab===tab && <View className='tab-line' />}
+              </View>
+            )
+          })}
+        </View>
+        {activeTab === 'artwork' && (
+          <View
+            style='padding:0 12px;display:flex;align-items:center'
+            onClick={() => setLargePic(!largePic)}
+          >
+            <Text style={`font-size:13px;color:${largePic?'#1A3C34':'#999'};border:1px solid ${largePic?'#1A3C34':'#ddd'};padding:3px 10px;border-radius:12px`}>
+              {largePic ? '大图' : '正常'}
+            </Text>
+          </View>
+        )}
       </View>
-      <ScrollView scrollY className='content' onScrollToLower={() => { if (activeTab === 'artwork') loadArtworks() }} lowerThreshold={200}>
-        {activeTab==='artwork'  && renderArtworkCols()}
+      <ScrollView scrollY className='content' onScrollToLower={() => { if (activeTab === 'artwork') loadArtworks() }} lowerThreshold={800}>
+        {activeTab==='artwork' && (largePic ? renderArtworkLarge() : renderArtworkCols())}
         {activeTab==='artist'   && renderArtistCols()}
         {activeTab==='museum'   && renderMuseumCols()}
         {loading && <View className='loading'><Text className='loading-text'>加载中...</Text></View>}
