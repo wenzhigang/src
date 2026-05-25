@@ -344,7 +344,7 @@ export default function ArtworkDetail() {
             <Text className='fav-icon'>{isFavorited ? '❤️' : '🤍'}</Text>
           </View>
         </View>
-        <View className='author-row' onClick={(e: any) => { e.stopPropagation(); if (artwork.artist_id) { Taro.navigateTo({ url: `/pages/artist/index?id=${artwork.artist_id}` }) } }}>
+        <View className='author-row' onClick={(e: any) => { e.stopPropagation(); if (artwork.artist_id) { Taro.navigateTo({ url: `/pages/artist/index?id=${artwork.artist_id}` }) } else if (artwork.artist_name) { Taro.navigateTo({ url: `/pages/artist/index?name=${encodeURIComponent(artwork.artist_name)}` }) } }}>
           <Text className='author-name'>{artwork.artist_name}</Text>
           <Text className='author-arrow'> &gt;</Text>
         </View>

@@ -40,8 +40,35 @@ export default function ArtistDetail() {
   useEffect(() => {
     const params = ((Taro.getCurrentInstance() || {}).router || {}).params
     const id = params && params.id
-    if (id) loadData(id)
+    const name = params && params.name
+    if (id) {
+      loadData(id)
+    } else if (name) {
+      loadDataByName(decodeURIComponent(name))
+    }
   }, [])
+
+  const loadDataByName = async (name: string) => {
+    try {
+      const db = Taro.cloud.database()
+      const res = await db.collection('artists').where({ name }).limit(1).get()
+      if (res.data && res.data.length > 0) {
+        loadData(res.data[0]._id)
+      } else {
+        // artists表里没有，直接用name加载画作
+        setLoading(false)
+        const fakeArtist = { _id: '', name, name_en: '', birth_year: 0, death_year: 0,
+          nationality: '', style: '', bio: '', fun_facts: [], avatar_url: '', artwork_count: 0 }
+        setArtist(fakeArtist as Artist)
+        Taro.setNavigationBarTitle({ title: name })
+        const artRes = await db.collection('artworks').where({ artist_name: name }).limit(100).get()
+        setArtworks(artRes.data as Artwork[])
+      }
+    } catch(e) {
+      console.error('loadDataByName error', e)
+      setLoading(false)
+    }
+  }
 
   const loadData = async (artistId: string) => {
     try {
