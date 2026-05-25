@@ -1,6 +1,6 @@
 import { View, Text, Image, ScrollView } from '@tarojs/components'
 import { useState, useEffect } from 'react'
-import Taro from '@tarojs/taro'
+import Taro, { useUnload } from '@tarojs/taro'
 import './index.scss'
 
 interface Artist {
@@ -32,6 +32,10 @@ export default function ArtistDetail() {
   const [loading, setLoading] = useState(true)
   const [showFullBio, setShowFullBio] = useState(false)
   const [relatedArtists, setRelatedArtists] = useState<Artist[]>([])
+
+  useUnload(() => {
+    Taro.eventCenter.trigger('backToIndex')
+  })
 
   useEffect(() => {
     const params = ((Taro.getCurrentInstance() || {}).router || {}).params

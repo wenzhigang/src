@@ -1,6 +1,6 @@
 import { View, Text, Image, ScrollView } from '@tarojs/components'
 import { useState, useEffect } from 'react'
-import Taro from '@tarojs/taro'
+import Taro, { useUnload } from '@tarojs/taro'
 import './index.scss'
 
 interface Museum {
@@ -30,6 +30,10 @@ export default function MuseumDetail() {
   const [museum, setMuseum] = useState<Museum | null>(null)
   const [artworks, setArtworks] = useState<Artwork[]>([])
   const [loading, setLoading] = useState(true)
+
+  useUnload(() => {
+    Taro.eventCenter.trigger('backToIndex')
+  })
 
   useEffect(() => {
     const params = ((Taro.getCurrentInstance() || {}).router || {}).params

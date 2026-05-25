@@ -24,6 +24,9 @@ export default function Admin() {
   const [keyword, setKeyword] = useState('')
   const offsetRef = useRef(0)
   const scrollTopRef = useRef(0)
+  const [scrollTopState, setScrollTopState] = useState(0)
+  const [scrollIntoViewId, setScrollIntoViewId] = useState("")
+  const scrollRestoreFlag = useRef(false)
   const initialLoadedRef = useRef(false)
   const [hasMore, setHasMore] = useState(true)
   const [editing, setEditing] = useState<Artwork | null>(null)
@@ -64,6 +67,13 @@ export default function Admin() {
     if (!initialLoadedRef.current) {
       initialLoadedRef.current = true
       loadArtworks(true)
+    } else {
+      // 从详情页返回，用scroll-into-view恢复位置
+      const savedId = Taro.getStorageSync('_adminLastItemId')
+      if (savedId) {
+        setScrollIntoViewId('')
+        setTimeout(() => setScrollIntoViewId('item-' + savedId), 150)
+      }
     }
   })
 
@@ -109,7 +119,56 @@ export default function Admin() {
     finally { setLoading(false) }
   }
 
-  const openEdit = (a: Artwork) => setEditing({ ...a })
+  const openEdit = (a: Artwork) => {
+    setScrollTopState(scrollTopRef.current)
+    setScrollIntoViewId('item-' + a._id)
+    Taro.setStorageSync('_adminLastItemId', a._id)
+    setEditing({ ...a })
+  }
+
+  const scrollToItemById = (itemId: string) => {
+    const query = Taro.createSelectorQuery()
+    // 一次exec同时获取scrollOffset和boundingClientRect
+    query.select('#admin-scroll').scrollOffset()
+    query.select('#item-' + itemId).boundingClientRect()
+    query.exec((res: any) => {
+      const scrollTop = res?.[0]?.scrollTop || 0
+      const rect = res?.[1]
+      if (rect) {
+        // top是相对视口，加scrollTop得绝对位置，减100留点上边距
+        const newScrollTop = scrollTop + rect.top - 100
+        console.log('[scrollToItemById] scrollTop:', scrollTop, 'rect.top:', rect.top, '->', newScrollTop)
+        const target = Math.max(0, newScrollTop)
+        // 直接操作ScrollView节点
+        const nq = Taro.createSelectorQuery()
+        nq.select('#admin-scroll').node().exec((nodeRes: any) => {
+          console.log('[node] res:', JSON.stringify(nodeRes?.[0]))
+          if (nodeRes?.[0]?.node) {
+            nodeRes[0].node.scrollTo({ top: target, animated: false })
+          } else {
+            // fallback
+            setScrollTopState(target + 1)
+            setTimeout(() => setScrollTopState(target), 100)
+          }
+        })
+      } else {
+        console.log('[scrollToItemById] item not found:', itemId)
+      }
+    })
+  }
+
+  const closeEdit = () => {
+    const savedId = Taro.getStorageSync('_adminLastItemId')
+    console.log('[closeEdit] savedId:', savedId, 'current scrollIntoViewId:', scrollIntoViewId)
+    setEditing(null)
+    if (savedId) {
+      setScrollIntoViewId('')
+      setTimeout(() => {
+        console.log('[closeEdit] setting scrollIntoViewId to:', 'item-' + savedId)
+        setScrollIntoViewId('item-' + savedId)
+      }, 200)
+    }
+  }
 
   const handleSave = async () => {
     if (!editing) return
@@ -136,8 +195,8 @@ export default function Admin() {
         return
       }
       setArtworks(prev => prev.map(a => a._id === editing._id ? { ...a, ...editing } : a))
+      closeEdit()
       Taro.showToast({ title: '保存成功', icon: 'success' })
-      setEditing(null)
     } catch { Taro.showToast({ title: '保存失败', icon: 'none' }) }
     finally { setSaving(false) }
   }
@@ -152,9 +211,25 @@ export default function Admin() {
           data: { action: 'delete', id: editing._id }
         }) as any
         if (res.result && res.result.success) {
-          setArtworks(prev => prev.filter(a => a._id !== editing._id))
-          Taro.showToast({ title: '已删除', icon: 'success' })
+          const delId = editing._id
+          setArtworks(prev => {
+            const idx = prev.findIndex(a => a._id === delId)
+            const next = prev[idx + 1] || prev[idx - 1]
+            if (next) {
+              Taro.setStorageSync('_adminLastItemId', next._id)
+            }
+            return prev.filter(a => a._id !== delId)
+          })
           setEditing(null)
+          // 等列表重渲染后滚动到目标item
+          setTimeout(() => {
+            const nextId = Taro.getStorageSync('_adminLastItemId')
+            console.log('[delete] nextId:', nextId)
+            if (nextId) {
+              scrollToItemById(nextId)
+            }
+          }, 400)
+          Taro.showToast({ title: '已删除', icon: 'success' })
         } else {
           Taro.showToast({ title: res.result?.error || '删除失败', icon: 'none' })
         }
@@ -601,13 +676,13 @@ export default function Admin() {
         </View>
       </View>
 
-      <ScrollView scrollY className='artwork-list' style='height:calc(100vh - 160px)' scrollTop={scrollTopRef.current} onScroll={e => { scrollTopRef.current = e.detail.scrollTop }} onScrollToLower={() => loadArtworks()}>
+      <ScrollView id='admin-scroll' scrollY enhanced bounces={false} className='artwork-list' style='height:calc(100vh - 160px)' scrollTop={scrollTopState} scrollIntoView={scrollIntoViewId} onScroll={e => { scrollTopRef.current = e.detail.scrollTop }} onScrollToLower={() => loadArtworks()}>
         {artworks.map(a => (
           largePic ? (
-            <View className='artwork-row-large' key={a._id} onClick={() => Taro.navigateTo({ url: `/pages/artwork/index?id=${a._id}` })}>
+            <View id={'item-' + a._id} className='artwork-row-large' key={a._id} onClick={() => { Taro.setStorageSync('_adminLastItemId', a._id); Taro.navigateTo({ url: `/pages/artwork/index?id=${a._id}` }) }}>
               <View className='large-img-wrap'>
                 <Image className='artwork-thumb-large' src={a.image_url} mode='widthFix'
-                  onClick={() => Taro.navigateTo({ url: `/pages/artwork/index?id=${a._id}` })} />
+                  onClick={() => { Taro.setStorageSync('_adminLastItemId', a._id); Taro.navigateTo({ url: `/pages/artwork/index?id=${a._id}` }) }} />
                 <View className='large-overlay-top'>
                   <Text className='large-title'>{a.title}</Text>
                   <Text className='large-artist'>{a.artist_name}</Text>
@@ -623,11 +698,11 @@ export default function Admin() {
               </View>
             </View>
           ) : (
-            <View className='artwork-row' key={a._id} onClick={() => Taro.navigateTo({ url: `/pages/artwork/index?id=${a._id}` })}>
+            <View id={'item-' + a._id} className='artwork-row' key={a._id} onClick={() => { Taro.setStorageSync('_adminLastItemId', a._id); Taro.navigateTo({ url: `/pages/artwork/index?id=${a._id}` }) }}>
               <Image className='artwork-thumb' src={a.image_url} mode='aspectFill'
-                onClick={() => Taro.navigateTo({ url: `/pages/artwork/index?id=${a._id}` })} />
+                onClick={() => { Taro.setStorageSync('_adminLastItemId', a._id); Taro.navigateTo({ url: `/pages/artwork/index?id=${a._id}` }) }} />
               <View className='artwork-info'>
-                <Text className='artwork-name' onClick={() => Taro.navigateTo({ url: `/pages/artwork/index?id=${a._id}` })}>{a.title}</Text>
+                <Text className='artwork-name' onClick={() => { Taro.setStorageSync('_adminLastItemId', a._id); Taro.navigateTo({ url: `/pages/artwork/index?id=${a._id}` }) }}>{a.title}</Text>
                 <Text className='artwork-meta'>{a.artist_name} · {a.style}代 · {a.year || '年代不详'}</Text>
               </View>
               <View style='display:flex;flex-direction:row;gap:4px;align-items:center'>
@@ -858,7 +933,7 @@ export default function Admin() {
       )}
 
       {editing && (
-        <View className='modal-mask' onClick={e => { if ((e.target as any).className?.includes('modal-mask')) setEditing(null) }}>
+        <View className='modal-mask' onClick={e => { if ((e.target as any).className?.includes('modal-mask')) closeEdit() }}>
           <View className='modal-box'>
             <Text className='modal-title'>编辑画作</Text>
             <Text className='field-label'>画作名称</Text>
@@ -874,7 +949,7 @@ export default function Admin() {
             <Text className='field-label'>描述</Text>
             <Textarea className='field-textarea' value={editing.description} onInput={e => f('description', e.detail.value)} />
             <View className='modal-btns'>
-              <View className='btn-cancel' onClick={() => setEditing(null)}><Text className='btn-cancel-text'>取消</Text></View>
+              <View className='btn-cancel' onClick={() => closeEdit()}><Text className='btn-cancel-text'>取消</Text></View>
               <View className='btn-save' onClick={handleSave}><Text className='btn-save-text'>{saving ? '保存中...' : '保存'}</Text></View>
             </View>
             <View className='btn-delete' onClick={handleDelete}><Text className='btn-delete-text'>删除此画作</Text></View>
