@@ -44,7 +44,6 @@ export default function MuseumDetail() {
   const loadData = async (museumId: string) => {
     try {
       const db = Taro.cloud.database()
-
       // 获取博物馆信息
       const museumRes = await db.collection('museums').doc(museumId).get()
       const museumData = museumRes.data as Museum
