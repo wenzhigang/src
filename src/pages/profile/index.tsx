@@ -1,4 +1,4 @@
-import { View, Text, Image, Button } from '@tarojs/components'
+import { View, Text, Image, Button, Input } from '@tarojs/components'
 import { useState, useEffect, useMemo } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import './index.scss'
@@ -55,6 +55,8 @@ export default function Profile() {
   const [history, setHistory] = useState<HistoryArtwork[]>([])
   const [loadingHistory, setLoadingHistory] = useState(false)
   const [activeSection, setActiveSection] = useState<'favorites' | 'history' | 'badges'>('favorites')
+  const [showNicknameInput, setShowNicknameInput] = useState(false)
+  const [inputNickname, setInputNickname] = useState('')
 
   const badges = useMemo(() => computeBadges(history, favorites), [history, favorites])
   const unlockedCount = badges.filter(b => b.unlocked).length
@@ -107,27 +109,64 @@ export default function Profile() {
     }
   }
 
-  const handleGetUserProfile = async () => {
-    setLoginLoading(true)
+  const handleGetUserProfile = () => {
+    // 点击登录按钮，显示昵称输入
+    const stored = Taro.getStorageSync('userInfo')
+    if (!stored || !stored.openid) { Taro.showToast({ title: '请稍后再试', icon: 'none' }); return }
+    setShowNicknameInput(true)
+  }
+
+  const handleAvatarChoose = async (e: any) => {
+    const avatarUrl = e.detail.avatarUrl
+    const stored = Taro.getStorageSync('userInfo')
+    if (!stored || !stored.openid || !avatarUrl) return
+    const newUserInfo: any = { ...stored, avatarUrl }
+    Taro.setStorageSync('userInfo', newUserInfo)
+    setUserInfo(newUserInfo)
     try {
-      const profileRes = await Taro.getUserProfile({ desc: '用于展示您的个人信息' })
-      const { nickName, avatarUrl } = profileRes.userInfo
-      const stored = Taro.getStorageSync('userInfo')
-      if (!stored || !stored.openid) { Taro.showToast({ title: '请稍后再试', icon: 'none' }); return }
-      const newUserInfo: UserInfo = { openid: stored.openid, nickname: nickName, avatarUrl, loginTime: stored.loginTime, role: stored.role }
-      Taro.setStorageSync('userInfo', newUserInfo)
-      setUserInfo(newUserInfo)
       const db = Taro.cloud.database()
       await db.collection('users').where({ openid: stored.openid }).update({
-        data: { nickname: nickName, avatar_url: avatarUrl, last_login: db.serverDate() }
+        data: { avatar_url: avatarUrl }
       })
-      Taro.showToast({ title: '登录成功', icon: 'success' })
-      loadFavorites(stored.openid)
-    } catch (err) {
-      Taro.showToast({ title: '取消登录', icon: 'none' })
-    } finally {
-      setLoginLoading(false)
+    } catch {}
+  }
+
+  const handleNicknameConfirm = async (e: any) => {
+    const nickname = e.detail.value || inputNickname
+    if (!nickname || nickname.trim().length < 1) {
+      Taro.showToast({ title: '请输入昵称', icon: 'none' }); return
     }
+    const stored = Taro.getStorageSync('userInfo')
+    if (!stored || !stored.openid) return
+    const newUserInfo: any = { ...stored, nickname: nickname.trim() }
+    Taro.setStorageSync('userInfo', newUserInfo)
+    setUserInfo(newUserInfo)
+    setShowNicknameInput(false)
+    try {
+      const db = Taro.cloud.database()
+      await db.collection('users').where({ openid: stored.openid }).update({
+        data: { nickname: nickname.trim(), last_login: db.serverDate() }
+      })
+      Taro.showToast({ title: '设置成功', icon: 'success' })
+      loadFavorites(stored.openid)
+      loadHistory(stored.openid)
+    } catch {}
+  }
+
+  const handleLogout = () => {
+    Taro.showModal({
+      title: '退出登录',
+      content: '退出后将清除本地登录信息',
+      success: ({ confirm }) => {
+        if (confirm) {
+          Taro.removeStorageSync('userInfo')
+          setUserInfo(null)
+          setFavorites([])
+          setHistory([])
+          Taro.showToast({ title: '已退出', icon: 'success' })
+        }
+      }
+    })
   }
 
   const goToArtwork = (artworkId: string, list: string[]) => {
@@ -151,14 +190,37 @@ export default function Profile() {
           </>
         ) : (
           <>
-            <View className='avatar-placeholder'><Text className='avatar-placeholder-text'>画</Text></View>
+            {/* 微信头像选择按钮 */}
+            <Button className='avatar-btn' openType='chooseAvatar' onChooseAvatar={handleAvatarChoose}>
+              {userInfo?.avatarUrl
+                ? <Image className='avatar' src={userInfo.avatarUrl} mode='aspectFill' />
+                : <View className='avatar-placeholder'><Text className='avatar-placeholder-text'>画</Text></View>
+              }
+            </Button>
             <View className='user-info'>
-              <Text className='nickname'>{userInfo && userInfo.openid ? '艺术爱好者' : '未登录'}</Text>
+              {showNicknameInput ? (
+                <Input
+                  className='nickname-input'
+                  type='nickname'
+                  placeholder='点击填写昵称'
+                  value={inputNickname}
+                  onInput={e => setInputNickname(e.detail.value)}
+                  onBlur={handleNicknameConfirm}
+                  onConfirm={handleNicknameConfirm}
+                  focus
+                />
+              ) : (
+                <Text className='nickname' onClick={() => setShowNicknameInput(true)}>
+                  {userInfo?.nickname || (userInfo?.openid ? '点击设置昵称' : '未登录')}
+                </Text>
+              )}
               <View className='membership-badge'><Text className='membership-text'>免费版</Text></View>
             </View>
-            <Button className='login-btn' onClick={handleGetUserProfile} loading={loginLoading}>
-              <Text className='login-text'>微信登录</Text>
-            </Button>
+            {!userInfo?.nickname && (
+              <Button className='login-btn' onClick={handleGetUserProfile}>
+                <Text className='login-text'>完善资料</Text>
+              </Button>
+            )}
           </>
         )}
       </View>
@@ -295,6 +357,11 @@ export default function Profile() {
            <View className='menu-item' onClick={() => Taro.navigateTo({ url: '/pages/privacy/index' })}>
              <Text className='menu-icon'>🔒</Text><Text className='menu-text'>隐私政策</Text><Text className='menu-arrow'>›</Text>
            </View>
+          {userInfo && userInfo.openid && (
+            <View className='menu-item' onClick={handleLogout}>
+              <Text className='menu-icon'>🚪</Text><Text className='menu-text'>退出登录</Text><Text className='menu-arrow'>›</Text>
+            </View>
+          )}
         </View>
       </View>
 

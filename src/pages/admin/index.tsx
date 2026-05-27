@@ -51,6 +51,10 @@ export default function Admin() {
   const [deletingLong, setDeletingLong] = useState(false)
   const [selectedLong, setSelectedLong] = useState<Set<string>>(new Set())
   const [showImportOptions, setShowImportOptions] = useState(false)
+  const [activeTab, setActiveTab] = useState<'artworks' | 'users'>('artworks')
+  const [users, setUsers] = useState<any[]>([])
+  const [loadingUsers, setLoadingUsers] = useState(false)
+  const [userStats, setUserStats] = useState<any>({})
   const [showPromptEditor, setShowPromptEditor] = useState(false)
   const [promptText, setPromptText] = useState('')
   const [promptSaving, setPromptSaving] = useState(false)
@@ -76,6 +80,39 @@ export default function Admin() {
       }
     }
   })
+
+  const loadUsers = async () => {
+    console.log('[loadUsers] 开始加载用户')
+    setLoadingUsers(true)
+    try {
+      const db = Taro.cloud.database()
+      const usersRes = await db.collection('users').orderBy('created_at', 'desc').limit(100).get()
+      const userList = usersRes.data as any[]
+      console.log('[loadUsers] 获取到用户数:', userList.length)
+      
+      // 为每个用户获取统计数据
+      const statsMap: any = {}
+      await Promise.all(userList.map(async (u) => {
+        const openid = u.openid || u._openid
+        try {
+          const [favRes, histRes] = await Promise.all([
+            db.collection('favorites').where({ openid }).count(),
+            db.collection('history').where({ openid }).count(),
+          ])
+          statsMap[openid] = {
+            favorites: favRes.total,
+            history: histRes.total,
+          }
+        } catch { statsMap[openid] = { favorites: 0, history: 0 } }
+      }))
+      setUsers(userList)
+      setUserStats(statsMap)
+    } catch (err) {
+      console.error('加载用户失败', err)
+    } finally {
+      setLoadingUsers(false)
+    }
+  }
 
   const loadArtworks = async (reset = false) => {
     if (loading) return
@@ -613,6 +650,16 @@ export default function Admin() {
 
   return (
     <View className='admin-page'>
+      <View className='admin-tabs' style='display:flex;gap:8px;padding:8px 12px;background:#0f0f1a;border-bottom:1px solid #1a1a2e'>
+        <View onClick={() => setActiveTab('artworks')}
+          style={`padding:6px 16px;border-radius:16px;background:${activeTab==='artworks'?'#1a3c34':'#1a1a2e'};`}>
+          <Text style='color:#e8dcc8;font-size:14px'>画作管理</Text>
+        </View>
+        <View onClick={() => { setActiveTab('users'); if(users.length===0) loadUsers() }}
+          style={`padding:6px 16px;border-radius:16px;background:${activeTab==='users'?'#1a3c34':'#1a1a2e'};`}>
+          <Text style='color:#e8dcc8;font-size:14px'>用户管理</Text>
+        </View>
+      </View>
       <View className='admin-header'>
         <View style='display:flex;justify-content:space-between;align-items:center'>
           <Text className='admin-title'>管理后台</Text>
@@ -676,7 +723,61 @@ export default function Admin() {
         </View>
       </View>
 
-      <ScrollView id='admin-scroll' scrollY enhanced bounces={false} className='artwork-list' style='height:calc(100vh - 160px)' scrollTop={scrollTopState} scrollIntoView={scrollIntoViewId} onScroll={e => { scrollTopRef.current = e.detail.scrollTop }} onScrollToLower={() => loadArtworks()}>
+      {activeTab === 'users' && (
+        <ScrollView scrollY style='height:calc(100vh - 160px)'>
+          {loadingUsers ? (
+            <View style='padding:40px;text-align:center'><Text style='color:#888'>加载中...</Text></View>
+          ) : (
+            <View style='padding:12px'>
+              <Text style='color:#888;font-size:13px;padding:0 4px 12px'>共 {users.length} 位用户</Text>
+              {users.map((u, i) => {
+                const openid = u.openid || u._openid
+                const stats = userStats[openid] || {}
+                const parseDate = (d: any) => {
+                  if (!d) return '未知'
+                  try {
+                    const date = new Date(d)
+                    if (isNaN(date.getTime())) return '未知'
+                    return date.toLocaleDateString('zh-CN')
+                  } catch { return '未知' }
+                }
+                const createdAt = parseDate(u.created_at)
+                const lastLogin = parseDate(u.last_login)
+                return (
+                  <View key={u._id} style='background:#1a1a2e;border-radius:12px;padding:12px;margin-bottom:10px'>
+                    <View style='display:flex;align-items:center;gap:10px;margin-bottom:8px'>
+                      {u.avatar_url
+                        ? <Image src={u.avatar_url} style='width:44px;height:44px;border-radius:50%' mode='aspectFill' />
+                        : <View style='width:44px;height:44px;border-radius:50%;background:#2a2a3e;display:flex;align-items:center;justify-content:center'>
+                            <Text style='color:#888;font-size:18px'>👤</Text>
+                          </View>
+                      }
+                      <View style='flex:1'>
+                        <View style='display:flex;align-items:center;gap:6px'>
+                          <Text style='color:#e8dcc8;font-size:15px;font-weight:600'>{u.nickname || '未设置昵称'}</Text>
+                          {u.role === 'admin' && (
+                            <View style='background:#c9a84c;border-radius:8px;padding:1px 6px'>
+                              <Text style='color:#0f0f1a;font-size:11px'>管理员</Text>
+                            </View>
+                          )}
+                        </View>
+                        <Text style='color:#666;font-size:12px'>{openid?.slice(0,16)}...</Text>
+                      </View>
+                    </View>
+                    <View style='display:flex;gap:6px;flex-wrap:nowrap;align-items:center'>
+                      <Text style='color:#888;font-size:12px;background:#0f0f1a;border-radius:6px;padding:3px 8px'>收藏 {stats.favorites ?? '-'}</Text>
+                      <Text style='color:#888;font-size:12px;background:#0f0f1a;border-radius:6px;padding:3px 8px'>浏览 {stats.history ?? '-'}</Text>
+                      <Text style='color:#888;font-size:12px;background:#0f0f1a;border-radius:6px;padding:3px 8px'>注册 {createdAt}</Text>
+                      <Text style='color:#888;font-size:12px;background:#0f0f1a;border-radius:6px;padding:3px 8px'>活跃 {lastLogin}</Text>
+                    </View>
+                  </View>
+                )
+              })}
+            </View>
+          )}
+        </ScrollView>
+      )}
+      {activeTab === 'artworks' && <ScrollView id='admin-scroll' scrollY enhanced bounces={false} className='artwork-list' style='height:calc(100vh - 160px)' scrollTop={scrollTopState} scrollIntoView={scrollIntoViewId} onScroll={e => { scrollTopRef.current = e.detail.scrollTop }} onScrollToLower={() => loadArtworks()}>
         {artworks.map(a => (
           largePic ? (
             <View id={'item-' + a._id} className='artwork-row-large' key={a._id} onClick={() => { Taro.setStorageSync('_adminLastItemId', a._id); Taro.navigateTo({ url: `/pages/artwork/index?id=${a._id}` }) }}>
@@ -720,7 +821,7 @@ export default function Admin() {
         <View style='height:16px' />
 
 
-      </ScrollView>
+      </ScrollView>}
 
       {showCorrections && (
         <View className='correction-overlay'>

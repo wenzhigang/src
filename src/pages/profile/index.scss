@@ -365,3 +365,24 @@ $text-sub: #666666;
   font-size: 11px;
   color: #ccc;
 }
+
+.avatar-btn {
+  background: transparent;
+  padding: 0;
+  border: none;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  &::after { border: none; }
+}
+
+.nickname-input {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a2e;
+  background: #f5f0e8;
+  border-radius: 8px;
+  padding: 4px 8px;
+  min-width: 120px;
+}
